@@ -1,0 +1,70 @@
+.statement-item:has(.statement-unlock) {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) 220px;
+  align-items: start;
+}
+
+.statement-item:has(.statement-unlock) .statement-main strong {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.statement-item:has(.statement-unlock) .statement-meta {
+  width: 100%;
+  min-width: 0;
+  display: block;
+  padding-left: 0;
+  text-align: left;
+}
+
+.statement-unlock {
+  display: grid;
+  gap: 8px;
+  width: min(220px, 100%);
+  margin-top: 10px;
+  text-align: left;
+}
+
+.statement-unlock label {
+  display: grid;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.statement-unlock input {
+  min-width: 0;
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+.statement-unlock button {
+  padding: 9px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.statement-unlock small,
+.statement-unlock span {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+@media (max-width: 620px) {
+  .statement-item:has(.statement-unlock) {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .statement-item:has(.statement-unlock) .statement-meta {
+    grid-column: 2;
+  }
+}
