@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
-import { FolderOpen, Mail, Save, Settings2 } from 'lucide-react';
+import { FolderOpen, Mail, RefreshCw, Save, Settings2 } from 'lucide-react';
 import { apiMutate, endpoints, useLiveData } from '../lib/live';
+import { connectGmail, syncGmail, type GmailStatus } from '../lib/gmail';
 import '../styles/optimize.css';
 
 type BurnrateSettings = {
   setup_complete?: boolean;
   settings?: { name?: string | null; watch_folder?: string | null; display_currency?: string | null };
 };
-type GmailStatus = { configured?: boolean; connected?: boolean; last_sync?: string | null };
 type Draft = { name: string; watch_folder: string; display_currency: string };
 
 export default function SettingsView() {
@@ -19,10 +19,34 @@ export default function SettingsView() {
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [gmailBusy, setGmailBusy] = useState(false);
+  const [gmailMessage, setGmailMessage] = useState('');
+  const gmailConnected = Boolean(gmail?.configured && gmail.connected);
 
   useEffect(() => {
     if (settings && !dirty) setDraft({ name: settings.name || '', watch_folder: settings.watch_folder || '', display_currency: settings.display_currency || 'INR' });
   }, [settings, dirty]);
+
+  const runGmailSync = async (pending = 'Checking Gmail for statements…') => {
+    setGmailBusy(true); setGmailMessage(pending);
+    try { const result = await syncGmail(); setGmailMessage(`Queued ${result.attachments_queued ?? 0} attachments from ${result.messages_scanned ?? 0} emails for processing.`); }
+    catch { setGmailMessage('Gmail sync did not finish. Try Sync now again.'); }
+    finally { setGmailBusy(false); }
+  };
+  const startGmailConnect = async () => {
+    setGmailBusy(true); setGmailMessage('');
+    try { await connectGmail(); } catch { setGmailMessage('Burnrate could not start Gmail sign-in. Try again.'); setGmailBusy(false); }
+  };
+
+  // Burnrate redirects here after Google sign-in; the first sync runs right away instead of waiting for a Burnrate restart.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const outcome = params.get('gmail');
+    if (!outcome) return;
+    window.history.replaceState(null, '', window.location.pathname);
+    if (outcome === 'connected') void runGmailSync('Gmail connected. Checking for statement emails…');
+    else setGmailMessage(params.get('reason') === 'no_refresh' ? 'Google did not grant offline access. Remove the app under Google Account → Security → Third-party access, then connect again.' : 'Gmail sign-in did not complete. Try again.');
+  }, []);
 
   const update = (field: keyof Draft, value: string) => { setDraft(current => ({ ...current, [field]: value })); setDirty(true); setMessage(''); };
   const save = async (event: React.SubmitEvent<HTMLFormElement>) => {
@@ -50,7 +74,16 @@ export default function SettingsView() {
         <label>Display currency<input value={draft.display_currency} onChange={event => update('display_currency', event.target.value)} maxLength={3} pattern="[A-Za-z]{3}" title="Three letter currency code" /></label>
         <div className="opt-form-actions"><button type="submit" disabled={!dirty || saving}><Save size={16} />{saving ? 'Saving…' : 'Save settings'}</button><span role="status" aria-live="polite">{message}</span></div>
       </form>
-      <section className="opt-panel opt-connect"><div className="opt-panel-top"><span className="opt-icon"><Mail size={18} /></span><span className={`opt-tag ${gmail?.configured && gmail.connected ? 'opt-connected' : ''}`}>{gmail?.configured && gmail.connected ? 'Connected' : 'Not configured'}</span></div><h3>Gmail integration</h3><p className="opt-secondary">{gmail?.configured && gmail.connected ? 'Gmail is connected to Burnrate.' : 'Gmail auto-sync not configured. Statement processing and the rest of CardOS work without it.'}</p>{gmail?.last_sync && <div className="opt-data"><span>Last Gmail sync</span><strong className="opt-small">{new Date(gmail.last_sync).toLocaleString('en-IN')}</strong></div>}</section>
+      <section className="opt-panel opt-connect"><div className="opt-panel-top"><span className="opt-icon"><Mail size={18} /></span><span className={`opt-tag ${gmailConnected ? 'opt-connected' : ''}`}>{gmailConnected ? 'Connected' : gmail?.configured ? 'Not connected' : 'Not configured'}</span></div><h3>Gmail integration</h3>
+        <p className="opt-secondary">{gmailConnected ? 'Gmail is connected to Burnrate with read-only access. Burnrate checks for statement emails from the last 120 days when it starts, and you can sync any time.'
+          : gmail?.configured ? 'Connect the Gmail account that receives your card statements. Burnrate requests read-only access and saves statement attachments to your watch folder.'
+          : <>Gmail auto-sync not configured. Run <code>npm run gmail:setup</code> in the CardOS folder to add a Google OAuth client. Statement processing and the rest of CardOS work without it.</>}</p>
+        {gmail?.last_sync && <div className="opt-data"><span>Last Gmail sync</span><strong className="opt-small">{new Date(gmail.last_sync).toLocaleString('en-IN')}</strong></div>}
+        {gmail?.configured && <div className="opt-form-actions">
+          {gmailConnected && <button type="button" disabled={gmailBusy} onClick={() => void runGmailSync()}><RefreshCw size={16} />{gmailBusy ? 'Syncing…' : 'Sync now'}</button>}
+          <button type="button" disabled={gmailBusy} onClick={() => void startGmailConnect()}><Mail size={16} />{gmailConnected ? 'Reconnect' : 'Connect Gmail'}</button>
+          <span role="status" aria-live="polite">{gmailMessage}</span></div>}
+        {!gmail?.configured && gmailMessage && <p className="opt-secondary" role="status">{gmailMessage}</p>}</section>
     </div>
   </div>;
 }

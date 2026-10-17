@@ -34,6 +34,17 @@ CardOS does not maintain a second finance database. It reads Burnrate endpoints 
 
 The browser fetches fresh API responses at startup and on each page load, refreshes when the tab regains focus, and revalidates every 45 seconds while visible. Processing statements are checked every five seconds. The global Sync button refreshes related datasets together. Financial responses stay in memory only; the browser stores only the theme preference.
 
+## Gmail sync
+
+Burnrate can pull statement attachments (PDF, CSV, XLS) from Gmail with read-only access. It needs your own Google OAuth client:
+
+1. In Google Cloud Console, enable the Gmail API, configure the OAuth consent screen with the `gmail.readonly` scope, and add your Gmail address as a test user.
+2. Create an OAuth client ID of type **Web application** with the authorized redirect URI `http://127.0.0.1:8000/api/gmail/oauth/callback`, then download its JSON.
+3. Run `npm run gmail:setup -- ~/Downloads/client_secret_….json` (or run it without a path to paste the ID and secret). It writes Burnrate's `libexec/.env.production` (mode 600), points the OAuth redirect back to CardOS Settings, and restarts the Burnrate service.
+4. Open Settings in CardOS and choose **Connect Gmail**. The first sync runs as soon as Google redirects back.
+
+After that, Burnrate syncs Gmail each time its service starts (at most hourly), and **Sync Gmail** in the top bar or **Sync now** in Settings syncs on demand. Each sync saves matching attachments from the last 120 days to the watch folder; Burnrate skips statements it has already imported. Rerun `npm run gmail:setup` after `brew upgrade burnrate`, because the upgrade replaces the `libexec` folder. While the consent screen is in Testing, Google expires the connection after 7 days; choose **Reconnect** in Settings, or publish the consent screen for your own use.
+
 ## Security and local configuration
 
 CardOS has no built-in credentials or financial records. It connects to Burnrate on `127.0.0.1`, and the browser calls the relative `/api/*` routes. Keep account and transaction data in Burnrate's local storage. If Burnrate uses Gmail sync, that integration may contact Gmail when you request a sync.

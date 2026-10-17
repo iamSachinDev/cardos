@@ -7,6 +7,7 @@
   "license": "MIT",
   "scripts": {
     "cardos": "node scripts/start-cardos.mjs",
+    "gmail:setup": "node scripts/configure-gmail.mjs",
     "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "start": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "build": "ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",
