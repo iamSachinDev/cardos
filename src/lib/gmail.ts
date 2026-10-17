@@ -1,4 +1,4 @@
-import { apiMutate } from './live';
+import { ApiMutationError, apiMutate } from './live';
 
 export type GmailStatus = { configured: boolean; connected: boolean; last_sync: string | null };
 export type GmailSyncResult = { status: string; messages_scanned?: number; attachments_queued?: number };
@@ -14,4 +14,9 @@ export async function connectGmail() {
   window.location.assign(auth_url);
 }
 
-export const syncGmail = () => apiMutate('/api/gmail/sync', 'POST') as Promise<GmailSyncResult>;
+export function gmailNeedsReconnect(error: unknown): boolean {
+  return error instanceof ApiMutationError && (error.status === 401 ||
+    /token refresh failed|reconnect gmail|gmail is not connected|invalid encrypted token|invalid_grant|invalid authentication credentials/i.test(error.detail || ''));
+}
+
+export const syncGmail = () => apiMutate('/api/gmail/sync', 'POST', undefined, { timeoutMs: 180_000 }) as Promise<GmailSyncResult>;

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FolderOpen, Mail, RefreshCw, Save, Settings2 } from 'lucide-react';
 import { apiMutate, endpoints, useLiveData } from '../lib/live';
-import { connectGmail, syncGmail, type GmailStatus } from '../lib/gmail';
+import { connectGmail, gmailNeedsReconnect, syncGmail, type GmailStatus } from '../lib/gmail';
 import '../styles/optimize.css';
 
 type BurnrateSettings = {
@@ -30,7 +30,7 @@ export default function SettingsView() {
   const runGmailSync = async (pending = 'Checking Gmail for statements…') => {
     setGmailBusy(true); setGmailMessage(pending);
     try { const result = await syncGmail(); setGmailMessage(`Queued ${result.attachments_queued ?? 0} attachments from ${result.messages_scanned ?? 0} emails for processing.`); }
-    catch { setGmailMessage('Gmail sync did not finish. Try Sync now again.'); }
+    catch (error) { setGmailMessage(gmailNeedsReconnect(error) ? 'Gmail needs to be reconnected. Choose Reconnect to sign in again.' : 'Gmail sync did not finish. Try Sync now again.'); }
     finally { setGmailBusy(false); }
   };
   const startGmailConnect = async () => {

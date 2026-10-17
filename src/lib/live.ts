@@ -155,9 +155,15 @@ export function useConnection(): Connection {
   return useSyncExternalStore(subscribe, connectionSnapshot, () => ({ state: 'connecting' }));
 }
 
-export async function apiMutate(path: string, method: 'POST' | 'PATCH' | 'PUT' | 'DELETE', body?: unknown) {
+export class ApiMutationError extends Error {
+  constructor(public status: number, public detail?: string) {
+    super('Burnrate could not complete that action.');
+  }
+}
+
+export async function apiMutate(path: string, method: 'POST' | 'PATCH' | 'PUT' | 'DELETE', body?: unknown, options?: { timeoutMs?: number }) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 20_000);
+  const timeout = setTimeout(() => controller.abort(), options?.timeoutMs ?? 20_000);
   let response: Response;
   try {
     response = await fetch(path, {
@@ -169,7 +175,10 @@ export async function apiMutate(path: string, method: 'POST' | 'PATCH' | 'PUT' |
     });
   } catch { throw new Error('Burnrate could not complete that action.'); }
   finally { clearTimeout(timeout); }
-  if (!response.ok) throw new Error('Burnrate could not complete that action.');
+  if (!response.ok) {
+    const errorBody = await response.json().catch(() => null) as { detail?: unknown } | null;
+    throw new ApiMutationError(response.status, typeof errorBody?.detail === 'string' ? errorBody.detail : undefined);
+  }
   const result = response.status === 204 ? null : await response.json();
   if (activeRefresh) await activeRefresh;
   await refreshAll('mutation');
