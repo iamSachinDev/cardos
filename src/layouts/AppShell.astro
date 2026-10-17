@@ -1,0 +1,63 @@
+---
+import '../styles/global.css';
+import { LayoutDashboard, CreditCard, ReceiptText, BarChart3, ArrowLeftRight, FileText, Moon, Sun, MoreHorizontal, Gift, Trophy, Settings, Wallet } from 'lucide-react';
+import BurnrateStatus from '../components/BurnrateStatus';
+const { title = 'Dashboard', eyebrow = 'CardOS', subtitle = 'Your private credit-card command center.' } = Astro.props;
+const path = Astro.url.pathname;
+const groups = [
+  ['Command Center', [['/', 'Dashboard', LayoutDashboard]]],
+  ['Cards', [['/cards', 'Card Wallet', CreditCard], ['/bills', 'Bills', ReceiptText]]],
+  ['Insights', [['/analytics', 'Analytics', BarChart3], ['/transactions', 'Transactions', ArrowLeftRight], ['/statements', 'Statements', FileText]]],
+  ['Optimize', [['/fees', 'Fee Optimizer', Wallet], ['/milestones', 'Milestones', Trophy], ['/offers', 'Offers', Gift]]],
+  ['System', [['/settings', 'Settings', Settings]]],
+] as const;
+const mobileNav = [['/', 'Home', LayoutDashboard], ['/cards', 'Cards', CreditCard], ['/bills', 'Bills', ReceiptText], ['/transactions', 'Activity', ArrowLeftRight], ['/more', 'More', MoreHorizontal]] as const;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width" />
+  <meta name="theme-color" content="#080a0f" />
+  <title>{title} · CardOS</title>
+</head>
+<body>
+  <div class="shell-grid">
+    <aside class="sidebar">
+      <a class="brand" href="/">
+        <div class="brand-mark">C</div>
+        <div><div class="brand-name">CardOS</div><div class="brand-sub">powered by Burnrate</div></div>
+      </a>
+      <nav class="nav">
+        {groups.map(([heading,links]) => <div class="nav-group"><div class="nav-heading">{heading}</div>{links.map(([href,label,Icon]) => <a href={href} class={path === href || (href !== '/' && path.startsWith(`${href}/`)) ? 'active' : ''}><Icon size={18}/><span>{label}</span></a>)}</div>)}
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="backend-pill">Burnrate<br/><span>Local financial data</span></div>
+      </div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div><div class="eyebrow">{eyebrow}</div><h1>{title}</h1><div class="subtitle">{subtitle}</div></div>
+        <div class="topbar-actions"><BurnrateStatus client:load /><button class="icon-button" id="themeToggle" aria-label="Toggle theme"><Moon id="moonIcon" size={18}/><Sun id="sunIcon" size={18} style={{ display: 'none' }}/></button></div>
+      </header>
+      <slot />
+    </main>
+  </div>
+  <nav class="mobile-nav" aria-label="Mobile navigation">{mobileNav.map(([href,label,Icon])=><a class:list={['mobile-nav-link',path===href || (href !== '/' && path.startsWith(`${href}/`)) ? 'active' : '']} href={href}><Icon size={20}/><span>{label}</span></a>)}</nav>
+<script is:inline>
+(() => {
+  const root = document.documentElement;
+  const saved = localStorage.getItem('cardos-theme');
+  if (saved === 'light') root.classList.add('light');
+  const button = document.getElementById('themeToggle');
+  const sync = () => {
+    const light = root.classList.contains('light');
+    const moon = document.getElementById('moonIcon'); const sun = document.getElementById('sunIcon');
+    if (moon) moon.style.display = light ? 'none' : ''; if (sun) sun.style.display = light ? '' : 'none';
+  };
+  sync();
+  button?.addEventListener('click', () => { root.classList.toggle('light'); localStorage.setItem('cardos-theme', root.classList.contains('light') ? 'light' : 'dark'); sync(); });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,31 @@
+{
+  "name": "cardos-burnrate-ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Premium Astro frontend for the local Burnrate credit-card analytics backend.",
+  "license": "MIT",
+  "scripts": {
+    "cardos": "node scripts/start-cardos.mjs",
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@astrojs/react": "latest",
+    "@tailwindcss/vite": "latest",
+    "astro": "latest",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "tailwindcss": "latest"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "typescript": "^5.9.2"
+  }
+}
