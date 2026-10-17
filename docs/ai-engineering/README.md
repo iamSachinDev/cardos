@@ -1,0 +1,49 @@
+# AI Engineering OS for CardOS
+
+- **Purpose:** Entry point to the AI Engineering OS: what it is, where each piece lives and how changes are approved.
+- **Audience:** The maintainer and the coding agents (Claude Code, Codex).
+- **Owner:** The maintainer.
+- **Related docs:** [Implementation roadmap](IMPLEMENTATION-ROADMAP.md) · [Phase status](PHASE-STATUS.md)
+- **How to validate:** Every link in the map resolves, and every status used in these docs is one of the eight under [Status vocabulary](#status-vocabulary).
+
+## What it is
+
+The AI Engineering OS is the infrastructure that lets Claude Code and Codex work on this repo safely side by side: shared instructions, versioned context, one worktree per task, guardrails, and status tracked by evidence. **It is not part of the app.** The CardOS UI, its `/api` proxy and its use of Burnrate are unchanged.
+
+**Profile:** CORE, scaled to the repo. CardOS is a small local-first Astro frontend with no backend and no deployment, so the PRODUCTION and SCALE profiles are mostly not applicable. Rationale: [roadmap, section 1](IMPLEMENTATION-ROADMAP.md#1-profile-and-rationale).
+
+## Start here
+
+- Agents: [`AGENTS.md`](../../AGENTS.md) (loaded automatically), then [`.ai/CURRENT.md`](../../.ai/CURRENT.md) and [`.ai/INDEX.md`](../../.ai/INDEX.md).
+- The maintainer: [`PHASE-STATUS.md`](PHASE-STATUS.md) for status, then the [roadmap](IMPLEMENTATION-ROADMAP.md) for the plan.
+
+## Map
+
+| Path | What it is |
+|---|---|
+| [`AGENTS.md`](../../AGENTS.md) | Shared rules for every agent: commands, data protection, multi-agent rules, risk classes, commit checklist. Codex reads it natively. |
+| [`CLAUDE.md`](../../CLAUDE.md) | Claude Code entrypoint; imports `AGENTS.md`. |
+| [`.ai/CONTEXT.md`](../../.ai/CONTEXT.md) | Verified architecture: topology, module map, data flow, endpoints, scripts. |
+| [`.ai/INDEX.md`](../../.ai/INDEX.md) | Knowledge map: which document to load for which task. |
+| [`.ai/CURRENT.md`](../../.ai/CURRENT.md) | Session handoff: state, ownership, next steps. |
+| [`.ai/decisions/0001-local-burnrate-patch.md`](../../.ai/decisions/0001-local-burnrate-patch.md) | Decision record: why Burnrate is patched locally. |
+| [`IMPLEMENTATION-ROADMAP.md`](IMPLEMENTATION-ROADMAP.md) | Profile, tool decisions, target architecture, 12-phase plan. |
+| [`PHASE-STATUS.md`](PHASE-STATUS.md) | Status, evidence and next action for every phase. |
+
+Planned, not yet present: `.specify/` and `specs/` (Phase 3), `model-policy.yaml` (Phase 7).
+
+## Approval model
+
+- **LOW** risk: agents may proceed.
+- **HIGH** and **CRITICAL**: the maintainer's explicit approval is needed first.
+- Agents never self-approve.
+
+MEDIUM work needs a plan first and the maintainer's approval before merge. The class table is in [`AGENTS.md` §7](../../AGENTS.md#7-risk-classes-and-approvals), and the local Burnrate patch is HIGH ([decision record](../../.ai/decisions/0001-local-burnrate-patch.md)). Phase 5 adds deny rules and hooks as defense in depth; they are not a sandbox.
+
+The repo is public: never put real financial or personal data in docs, fixtures, evals or memory.
+
+## Status vocabulary
+
+Use exactly these words: **Implemented and verified** · **Implemented but unverified** · **Partially implemented** · **In progress** · **Blocked** · **Deferred** · **Not applicable** · **Not started**.
+
+A status changes only with recorded evidence. Definitions: [PHASE-STATUS.md](PHASE-STATUS.md#status-vocabulary).
