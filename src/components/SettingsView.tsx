@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { FolderOpen, Mail, RefreshCw, Save, Settings2 } from 'lucide-react';
 import { apiMutate, endpoints, useLiveData } from '../lib/live';
 import { connectGmail, gmailNeedsReconnect, syncGmail, type GmailStatus } from '../lib/gmail';
+import { formatDateTime } from '../lib/api';
 import '../styles/optimize.css';
 
 type BurnrateSettings = {
@@ -78,7 +79,7 @@ export default function SettingsView() {
         <p className="opt-secondary">{gmailConnected ? 'Gmail is connected to Burnrate with read-only access. Burnrate checks for statement emails from the last 120 days when it starts, and you can sync any time.'
           : gmail?.configured ? 'Connect the Gmail account that receives your card statements. Burnrate requests read-only access and saves statement attachments to your watch folder.'
           : <>Gmail auto-sync not configured. Run <code>npm run gmail:setup</code> in the CardOS folder to add a Google OAuth client. Statement processing and the rest of CardOS work without it.</>}</p>
-        {gmail?.last_sync && <div className="opt-data"><span>Last Gmail sync</span><strong className="opt-small">{new Date(gmail.last_sync).toLocaleString('en-IN')}</strong></div>}
+        {gmail?.last_sync && <div className="opt-data"><span>Last Gmail sync</span><strong className="opt-small">{formatDateTime(gmail.last_sync)}</strong></div>}
         {gmail?.configured && <div className="opt-form-actions">
           {gmailConnected && <button type="button" disabled={gmailBusy} onClick={() => void runGmailSync()}><RefreshCw size={16} />{gmailBusy ? 'Syncing…' : 'Sync now'}</button>}
           <button type="button" disabled={gmailBusy} onClick={() => void startGmailConnect()}><Mail size={16} />{gmailConnected ? 'Reconnect' : 'Connect Gmail'}</button>

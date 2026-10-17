@@ -21,17 +21,46 @@ export function formatCurrency(value: number | null | undefined, currency = 'INR
   catch { return `₹${Number(value).toLocaleString('en-IN')}`; }
 }
 
+const IST_TIME_ZONE = 'Asia/Kolkata';
+const calendarDate = /^\d{4}-\d{2}-\d{2}$/;
+const naiveDateTime = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?$/;
+const dateFormatter = new Intl.DateTimeFormat('en-IN', { timeZone: IST_TIME_ZONE, day: '2-digit', month: 'short', year: 'numeric' });
+const dateTimeFormatter = new Intl.DateTimeFormat('en-IN', { timeZone: IST_TIME_ZONE, day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true });
+const isoDateFormatter = new Intl.DateTimeFormat('en-GB', { timeZone: IST_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' });
+
+function parseIstDate(value: string) {
+  // Calendar dates are billing dates, not instants. Burnrate stores timestamp
+  // columns with datetime.utcnow() and serializes them without a UTC suffix.
+  const normalized = calendarDate.test(value) ? `${value}T00:00:00+05:30`
+    : naiveDateTime.test(value) ? `${value.replace(' ', 'T')}Z` : value;
+  return new Date(normalized);
+}
+
 export function formatDate(value?: string | null) {
   if (!value) return '—';
-  const d = new Date(value.includes('T') ? value : `${value}T00:00:00`);
+  const d = parseIstDate(value);
   if (Number.isNaN(d.getTime())) return value;
-  return d.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+  return dateFormatter.format(d);
+}
+
+export function formatDateTime(value?: string | null) {
+  if (!value) return '—';
+  const d = parseIstDate(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return `${dateTimeFormatter.format(d)} IST`;
 }
 
 export function localDateISO() {
-  const d = new Date();
-  const y = d.getFullYear(); const m = String(d.getMonth()+1).padStart(2,'0'); const day = String(d.getDate()).padStart(2,'0');
-  return `${y}-${m}-${day}`;
+  const parts = isoDateFormatter.formatToParts(new Date());
+  const get = (type: 'year' | 'month' | 'day') => parts.find(part => part.type === type)?.value;
+  return `${get('year')}-${get('month')}-${get('day')}`;
+}
+
+export function daysUntilDate(date: string) {
+  const due = calendarDate.test(date) ? date : date.slice(0, 10);
+  const today = localDateISO();
+  const dayNumber = (iso: string) => Date.UTC(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10))) / 86_400_000;
+  return dayNumber(due) - dayNumber(today);
 }
 
 export function formatCompactINR(value: number) {
