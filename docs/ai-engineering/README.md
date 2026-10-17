@@ -4,7 +4,7 @@
 - **Audience:** The maintainer and the coding agents (Claude Code, Codex).
 - **Owner:** The maintainer.
 - **Related docs:** [Implementation roadmap](IMPLEMENTATION-ROADMAP.md) · [Phase status](PHASE-STATUS.md)
-- **How to validate:** Every link in the map resolves, and every status used in these docs is one of the eight under [Status vocabulary](#status-vocabulary).
+- **How to validate:** Every link in the map resolves, and every work status used in these docs is one of the eight under [Status vocabulary](#status-vocabulary).
 
 ## What it is
 
@@ -29,8 +29,10 @@ The AI Engineering OS is the infrastructure that lets Claude Code and Codex work
 | [`.ai/decisions/0001-local-burnrate-patch.md`](../../.ai/decisions/0001-local-burnrate-patch.md) | Decision record: why Burnrate is patched locally. |
 | [`IMPLEMENTATION-ROADMAP.md`](IMPLEMENTATION-ROADMAP.md) | Profile, tool decisions, target architecture, 12-phase plan. |
 | [`PHASE-STATUS.md`](PHASE-STATUS.md) | Status, evidence and next action for every phase. |
+| [`.specify/memory/constitution.md`](../../.specify/memory/constitution.md) | Spec Kit constitution: the project's durable principles (proposed, pending the maintainer's ratification). |
+| [`specs/001-gmail-sync/spec.md`](../../specs/001-gmail-sync/spec.md) | Retroactive spec of Gmail statement sync, with requirement IDs and traceability (draft). |
 
-Planned, not yet present: `.specify/` and `specs/` (Phase 3), `model-policy.yaml` (Phase 7).
+Planned, not yet present: `model-policy.yaml` (Phase 7).
 
 ## Approval model
 
@@ -47,3 +49,5 @@ The repo is public: never put real financial or personal data in docs, fixtures,
 Use exactly these words: **Implemented and verified** · **Implemented but unverified** · **Partially implemented** · **In progress** · **Blocked** · **Deferred** · **Not applicable** · **Not started**.
 
 A status changes only with recorded evidence. Definitions: [PHASE-STATUS.md](PHASE-STATUS.md#status-vocabulary).
+
+Specs and the constitution carry a document status instead: a spec is Draft, Accepted, Implemented or Verified, and the constitution is Proposed until the maintainer ratifies it ([constitution, Governance](../../.specify/memory/constitution.md#governance)).

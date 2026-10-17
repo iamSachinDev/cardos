@@ -4,9 +4,9 @@
 - **Audience:** AI coding agents and the maintainer.
 - **Owner:** The maintainer.
 - **Related docs:** [AGENTS.md](../AGENTS.md) · [CONTEXT](CONTEXT.md) · [CURRENT](CURRENT.md) · [AI-engineering docs](../docs/ai-engineering/README.md)
-- **How to validate:** every path below exists, except the row marked planned (`ls` each one). When you re-check a document against the code, update its date.
+- **How to validate:** every path below exists (`ls` each one). When you re-check a document against the code, update its date.
 
-Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **COLD** = history and archives, load only when asked (none yet).
+Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **COLD** = history, archives and generated tooling, load only when asked.
 
 | Path | What it is for | Tier | Owner | Last validated |
 |---|---|---|---|---|
@@ -23,7 +23,9 @@ Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **C
 | [`patches/burnrate-0.5.2.patch`](../patches/burnrate-0.5.2.patch) | Local fixes to Burnrate 0.5.2 (840 lines) | WARM | maintainer | 2026-10-18 |
 | [`patches/burnrate-password-reparse-preserve.patch`](../patches/burnrate-password-reparse-preserve.patch) | Follow-up: keep a locked statement when a password retry fails. Not in the README (see ADR 0001) | WARM | maintainer | 2026-10-18 |
 | [`scripts/`](../scripts/) | `start-cardos.mjs` (launcher) and `configure-gmail.mjs` (Gmail setup) | WARM | maintainer | 2026-10-18 |
-| `.specify/`, `specs/` | Spec Kit constitution and feature specs. Not in the repo yet | planned, Phase 3 | maintainer | — |
+| [`.specify/memory/constitution.md`](../.specify/memory/constitution.md) | Spec Kit constitution: durable principles and governance (proposed, pending ratification) | WARM | maintainer | 2026-10-18 |
+| [`specs/001-gmail-sync/spec.md`](../specs/001-gmail-sync/spec.md) | Retroactive spec of Gmail sync: requirement IDs, edge cases, traceability (draft) | WARM | maintainer | 2026-10-18 |
+| `.specify/` (templates, scripts, workflows, integration config), `.claude/skills/speckit-*`, `.agents/skills/speckit-*` | Spec Kit 1.2.1 install and its commands for each agent; managed by the `specify` CLI, don't hand-edit | COLD | maintainer | 2026-10-18 |
 
 `—` means no date is recorded here yet (a document's own header may carry one). `partial` means the README's Google-side claims were not checked. Known README gaps, left for the maintainer:
 
@@ -33,6 +35,6 @@ Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **C
 ## How to retrieve
 
 1. Load the HOT tier first: `AGENTS.md` (Claude Code also loads `CLAUDE.md`), `.ai/CURRENT.md`, then this index.
-2. Add only the WARM documents the task needs: code or data-flow work → `CONTEXT.md`; Burnrate, Gmail sync or statement behaviour → ADR 0001; AI-engineering process → `docs/ai-engineering/`.
+2. Add only the WARM documents the task needs: code or data-flow work → `CONTEXT.md`; Burnrate, Gmail sync or statement behaviour → ADR 0001; AI-engineering process → `docs/ai-engineering/`; a new or changed feature → the constitution and the feature's spec in `specs/`.
 3. Never load everything. The patch files are large: read the ADR first, then search them with `grep -n`.
 4. If a document's date is older than the code you are changing, check its claims against the code before relying on them.

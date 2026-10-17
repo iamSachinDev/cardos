@@ -31,7 +31,7 @@ This table holds each phase's status and next action. Edit it, and the Phase 2 c
 |---|---|---|---|---|
 | [P1](#p1-audit) | Audit | Implemented and verified | none | None. The findings are in the [roadmap](IMPLEMENTATION-ROADMAP.md#2-baseline). |
 | [P2](#p2-foundation) | Foundation | In progress | P1 | Run the Codex behavioural quiz after the Codex plan's usage limit resets (about 04:10 on 2026-10-18), record the result here, then mark P2 Implemented and verified. The maintainer reviews the branch and decides whether to merge or open a PR. |
-| [P3](#p3-spec-kit) | Spec Kit | Not started | P2 | Upgrade Spec Kit to v1.2.1 in a worktree and review the install diff. |
+| [P3](#p3-spec-kit) | Spec Kit | In progress | P2 | Run the Codex spec-reading check after its usage limit resets (P3-C6b). The maintainer ratifies the constitution and accepts spec 001 (the phase's goal is that both agents work from an approved spec). |
 | [P4](#p4-orchestration) | Orchestration | Not started | P2, P3 | Verify where Codex keeps project-level config, then build the worktree helper. |
 | [P5](#p5-guardrails) | Guardrails | Not started | P2, P4 | Map the `AGENTS.md` risk classes to enforcement; ask the maintainer to approve the ruleset on `main` before enabling it. |
 | [P6](#p6-code-intelligence-and-memory) | Code intelligence and memory | Not started | P2, P5 | Pin Serena v2 and add it to Claude Code. |
@@ -122,12 +122,28 @@ The tiers are descriptive. Phase 7 maps them to real models and effort levels.
 | Field | Value |
 |---|---|
 | Completion criteria | Spec Kit v1.2.1 pinned and installed from a worktree with the diff reviewed; both integrations installed; a constitution and a retroactive Gmail sync spec with requirement IDs exist; `AGENTS.md` §9, `.ai/INDEX.md` and the README stop marking them as planned ([roadmap](IMPLEMENTATION-ROADMAP.md#p3-spec-kit)) |
-| Chunks | Defined when the phase starts |
-| Verification evidence | None yet |
-| Blockers | None recorded |
-| Security findings | None yet. Constraint: the Claude integration can write `.claude/settings.json`, so install in a worktree and review the diff. Changes to agent settings are HIGH risk and need the maintainer's approval |
-| Documentation status | Not started |
-| Git commit | None |
+| Chunks | See the chunk table below |
+| Verification evidence | Recorded per chunk in the table below |
+| Blockers | Codex spec-reading check only: the Codex plan's usage limit (resets about 04:10 on 2026-10-18) |
+| Security findings | Install diff reviewed (2026-10-18): no tracked file changed, no `.claude/settings.json` written (`.claude/` holds only `skills/`), no absolute paths or usernames in generated files, all 32 manifest files match their recorded sha256 (reviewer R1). Spec Kit's own `.specify/.gitignore` keeps per-checkout state (`feature.json`, local packages) out of git. `/speckit-taskstoissues` creates public GitHub issues, so `AGENTS.md` §7 now classes publishing to GitHub as HIGH. `.gitignore` for local agent settings remains a Phase 5 item |
+| Documentation status | Implemented and verified |
+| Git commit | Local commit on `ai-os/phase-3`, not pushed: `git log -1 ai-os/phase-3`. Base: `16e95c5a` on `ai-os/phase-2` |
+
+**Chunks:**
+
+| Chunk | Deliverable | Status | Evidence |
+|---|---|---|---|
+| P3-C0 | Branch `ai-os/phase-3` in `../cardos-ai-os`, stacked on `ai-os/phase-2` | Implemented and verified | `git log` shows `ai-os/phase-3` based on `16e95c5a` (2026-10-18) |
+| P3-C1 | Spec Kit CLI pinned to v1.2.1 | Implemented and verified | `uv tool install specify-cli --force --from git+https://github.com/github/spec-kit.git@v1.2.1`; `specify --version` prints 1.2.1 (previously 0.16.1.dev0). Rollback: `uv tool install specify-cli==0.16.1 --force` (2026-10-18) |
+| P3-C2 | Both integrations installed | Implemented and verified | `specify init --here --force --integration claude --script sh --non-interactive --ignore-agent-tools`, then `specify integration install codex`. `specify integration status`: OK, installed claude and codex, default claude, multi-install safe, 0 modified or missing managed files. Codex's prompt (`codex debug prompt-input`) lists all 10 `speckit-*` skills; a fresh Claude Code session lists the same 10 (2026-10-18) |
+| P3-C3 | Constitution v1.0.0 (Proposed, pending ratification) | Implemented and verified | Written by a writer agent following `/speckit-constitution`; independent review R1 fixed 17 issues (none high severity); authority order mirrors `AGENTS.md` §9; 66 links resolve; privacy and gitleaks scans clean (2026-10-18). Not ratified |
+| P3-C4 | Retroactive spec `specs/001-gmail-sync/spec.md` (Draft, pending acceptance) with requirement IDs and traceability | Implemented and verified | Written by a writer agent following `/speckit-specify`. Independent review R2 checked all 59 requirements (FR-001 to FR-059, non-functional FR-050 to FR-059) and 10 success criteria against the code and both patches; fixed over-credited evidence and code mismatches; resolved both clarifications with coordinator-verified Burnrate source facts. Traceability: 59 of 59 rows name code, 6 partial evidence, 53 unverified, 0 tests (Phase 9). Gaps G-1 to G-17 recorded. Not accepted (2026-10-18) |
+| P3-C5 | `AGENTS.md` §7, §9 and §10, `.ai/INDEX.md` and the README stop marking Spec Kit as planned | Implemented and verified | Edited by the coordinator, checked by R1 (which corrected the §10 Spec Kit note: 1.2.1's new-feature script creates no git branches without the optional git extension) (2026-10-18) |
+| P3-C6a | Claude Code reads the spec | Implemented and verified | A fresh `claude -p` session (fast tier, read-only tools, plan mode) answered 5/5 questions whose answers exist only in spec 001: status, FR-006 and its origin, the 180 s timeout (FR-014), the XLS/XLSX limitation (FR-034, G-4), the FR-050 to FR-059 range. It changed no files (2026-10-18) |
+| P3-C6b | Codex reads the spec | Blocked | Skill visibility verified (P3-C2); the same quiz via `codex exec` waits for the Codex plan's usage limit to reset (about 04:10 on 2026-10-18) |
+| P3-C7 | Local commit, no push | Implemented and verified | This commit on `ai-os/phase-3` (local only, not pushed). Gates run before committing: `gitleaks git --staged` exit 0, `npm run build` exit 0 |
+
+Routing in this phase: two writer agents (balanced tier), two independent reviewers (premium tier), visibility checks on the fast tier.
 
 ### P4: Orchestration
 
