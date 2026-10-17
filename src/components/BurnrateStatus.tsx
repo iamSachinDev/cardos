@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
-import { apiMutate, endpoints, refreshAll, startLiveSync, useConnection, useLiveData } from '../lib/live';
-
-type GmailStatus = { configured: boolean; connected: boolean; last_sync: string | null };
+import { endpoints, refreshAll, startLiveSync, useConnection, useLiveData } from '../lib/live';
+import { connectGmail, syncGmail, type GmailStatus } from '../lib/gmail';
 
 export default function BurnrateStatus() {
   const connection = useConnection();
@@ -20,13 +19,14 @@ export default function BurnrateStatus() {
     : `Burnrate connected · ${age}`;
   return <div className="sync-group">
     <div className={`live-status ${connection.state}`} role="status" aria-live="polite"><span className="status-dot" />
-      <span><strong>{label}</strong><small>Local only</small></span></div>
+      <span><strong>{label}</strong><small>Local Burnrate connection</small></span></div>
     <button className="sync-button" type="button" onClick={() => void refreshAll('manual')} disabled={connection.state === 'refreshing'} aria-label="Sync with Burnrate">
       <RefreshCw size={15} /> <span>Sync</span>
     </button>
     {gmail && <div className="gmail-status">
-      {gmail.configured && gmail.connected ? <button type="button" disabled={gmailBusy} onClick={async () => { setGmailBusy(true); setGmailError(false); try { await apiMutate('/api/gmail/sync', 'POST'); } catch { setGmailError(true); } finally { setGmailBusy(false); } }}>{gmailError ? 'Gmail sync failed · Retry' : 'Sync Gmail'}</button>
-        : <span>Gmail auto-sync not configured</span>}
+      {!gmail.configured ? <span>Gmail auto-sync not configured</span>
+        : gmail.connected ? <button type="button" disabled={gmailBusy} onClick={async () => { setGmailBusy(true); setGmailError(false); try { await syncGmail(); } catch { setGmailError(true); } finally { setGmailBusy(false); } }}>{gmailError ? 'Gmail sync failed · Retry' : 'Sync Gmail'}</button>
+        : <button type="button" disabled={gmailBusy} onClick={async () => { setGmailBusy(true); setGmailError(false); try { await connectGmail(); } catch { setGmailError(true); setGmailBusy(false); } }}>{gmailError ? 'Gmail sign-in failed · Retry' : 'Connect Gmail'}</button>}
     </div>}
   </div>;
 }

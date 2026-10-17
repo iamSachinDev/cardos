@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawn } from 'node:child_process';
-import { closeSync, existsSync, openSync } from 'node:fs';
+import { closeSync, constants, existsSync, fchmodSync, openSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -123,15 +123,17 @@ async function ensureCardos() {
     throw new Error('Port 4321 is occupied by another service. Free that port and run CardOS again.');
   }
   if (!existsSync(astroBin)) {
-    throw new Error('CardOS dependencies are missing. Run npm install, then npm run cardos.');
+    throw new Error('CardOS dependencies are missing. Run npm ci, then npm run cardos.');
   }
 
-  const logFd = openSync(astroLog, 'a');
+  const logFd = openSync(astroLog, constants.O_WRONLY | constants.O_CREAT | constants.O_APPEND | constants.O_NOFOLLOW, 0o600);
   let child;
   try {
+    fchmodSync(logFd, 0o600);
     child = spawn(process.execPath, [astroBin, 'dev', '--host', '127.0.0.1', '--port', '4321'], {
       cwd: projectDir,
       detached: true,
+      env: { ...process.env, ASTRO_TELEMETRY_DISABLED: '1' },
       stdio: ['ignore', logFd, logFd],
     });
   } finally {
