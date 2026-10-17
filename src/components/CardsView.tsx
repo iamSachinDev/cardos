@@ -18,8 +18,8 @@ export default function CardsView() {
       return <a href={`/cards/detail?id=${encodeURIComponent(card.id)}`} className={`bank-card wallet-card ${bankClass(card.bank)}`} key={card.id} aria-label={`View ${card.name || bankLabel(card.bank)} details`}>
         <div className="wallet-top"><span>{bankLabel(card.bank)}</span><span className="wallet-chip" aria-hidden="true"/></div>
         <div><div className="wallet-name">{card.name || 'Credit Card'}</div><div className="wallet-digits">•••• {card.last4}</div></div>
-        <div className="wallet-bottom"><div><small>Imported spend</small><strong>{formatCurrency(summary ? detail?.amount ?? 0 : undefined,detail?.currency||'INR')}</strong></div><div><small>Next due</small><strong>{due ? formatCurrency(due.totalAmountDue,due.currency||'INR') : 'Unknown'}</strong></div></div>
-        <div className="wallet-foot"><span>{due ? formatDate(due.dueDate) : 'No due date recorded'}</span><span>{detail?.count || 0} transactions</span></div>
+        <div className="wallet-bottom"><div><small>Imported spend</small><strong>{summary ? detail ? formatCurrency(detail.amount, detail.currency || 'INR') : 'No imported data' : 'Unknown'}</strong></div><div><small>Next due</small><strong>{due ? formatCurrency(due.totalAmountDue,due.currency||'INR') : 'Unknown'}</strong></div></div>
+        <div className="wallet-foot"><span>{due ? formatDate(due.dueDate) : 'No due date recorded'}</span><span>{detail ? `${detail.count} transactions` : 'No imported data'}</span></div>
       </a>;
     })}</div> : <div className="empty">No cards yet. Add cards in Burnrate to build your wallet.</div>}
   </>;

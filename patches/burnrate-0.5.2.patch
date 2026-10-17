@@ -1,0 +1,840 @@
+diff -ruN --exclude __pycache__ burnrate-orig/backend/config.py /opt/homebrew/opt/burnrate/libexec/backend/config.py
+--- backend/config.py	2026-10-08 03:31:13
++++ backend/config.py	2026-10-17 23:20:45
+@@ -40,7 +40,10 @@
+     gmail_oauth_success_redirect: str | None = None
+     gmail_oauth_error_redirect: str | None = None
+     burnrate_oauth_fernet_key: str | None = None
+-    
++    # Regex for statement filenames to ignore (e.g. broker or loan PDFs that the
++    # Gmail query also matches); case-insensitive, matched without Burnrate's prefix.
++    burnrate_ignore_filename_regex: str = ""
++
+     formspree_url: str | None = None
+ 
+     model_config = SettingsConfigDict(
+diff -ruN --exclude __pycache__ burnrate-orig/backend/parsers/detector.py /opt/homebrew/opt/burnrate/libexec/backend/parsers/detector.py
+--- backend/parsers/detector.py	2026-10-08 03:31:13
++++ backend/parsers/detector.py	2026-10-17 23:33:23
+@@ -8,10 +8,69 @@
+ 
+ import pdfplumber
+ 
++# Burnrate stores incoming files under a unique prefix: Gmail sync saves
++# attachments as gmail_<msgid12>_<rand8>_<original name> and uploads are saved
++# as <uuid4 hex>_<original name>. Filename rules (notably the anchored SBI
++# numeric pattern) must see the original name, so the prefix is stripped first.
++_STORAGE_PREFIX_RE = re.compile(
++    r"^(?:gmail_[0-9a-f]{12}_[0-9a-f]{8}_|[0-9a-f]{32}_)", re.IGNORECASE
++)
+ 
++# Page-1 markers present on every credit card statement (amount due / credit
++# limit summary box, masked card number).
++_CARD_STATEMENT_MARKERS_RE = re.compile(
++    r"total\s+amount\s+due|minimum\s+amount\s+due|total\s+payment\s+due"
++    r"|minimum\s+payment\s+due|total\s+dues|minimum\s+due|credit\s+limit"
++    r"|card\s+(?:number|no\b)|\d{4}\s*[x*]{4}|[x*]{4}[\s-]*[x*]{4}"
++)
++
++# Page-1 markers of documents that are NOT card statements but arrive via the
++# same Gmail query: broker / depository statements, mutual fund statements,
++# loan and EMI repayment schedules, bank account statements.
++_NON_CARD_DOCUMENT_RE = re.compile(
++    r"\bdemat\b|running\s+account|contract\s+note|depository\s+participant"
++    r"|mutual\s+fund|\bfolio\b"
++    r"|amorti[sz]ation|repayment\s+schedule|loan\s+account"
++    r"|savings\s+account|current\s+account"
++)
++
++# EMI / loan-on-card booking letters (e.g. "SmartEMI Loan on your HDFC Bank
++# Credit Card", "EasyEMI on your ... Credit Card") quote the masked card number,
++# so they carry card markers; they never carry a statement summary.
++_EMI_LETTER_RE = re.compile(r"pleased\s+to\s+grant\s+you|emi\s+loan\s+no|\bloan\s+no\.")
++_STATEMENT_SUMMARY_RE = re.compile(
++    r"total\s+amount\s+due|minimum\s+amount\s+due|total\s+payment\s+due"
++    r"|minimum\s+payment\s+due|total\s+dues|statement\s+period|statement\s+date"
++)
++
++
++def _original_filename(filename: str) -> str:
++    """Strip Burnrate's Gmail-sync / upload storage prefix from a filename."""
++    return _STORAGE_PREFIX_RE.sub("", filename, count=1)
++
++
++def _is_non_card_text(text_lower: str) -> bool:
++    """True when page-1 text is clearly not a credit card statement.
++
++    Requires positive evidence of another document type AND the absence of
++    every card-statement marker, so card statements that merely mention a
++    savings account or a loan are never rejected. EMI booking letters are
++    recognised separately because they quote the card number.
++    """
++    if _EMI_LETTER_RE.search(text_lower) and not _STATEMENT_SUMMARY_RE.search(text_lower):
++        return True
++    return bool(
++        _NON_CARD_DOCUMENT_RE.search(text_lower)
++        and not _CARD_STATEMENT_MARKERS_RE.search(text_lower)
++    )
++
++
+ def _detect_bank_from_filename(filename: str) -> Optional[str]:
+     """Detect bank from filename patterns (shared by PDF and CSV)."""
+-    lower = filename.lower()
++    name = _original_filename(filename).lower()
++    # Gmail sync replaces spaces in attachment names with '_'; match multi-word
++    # bank names against a space-normalised copy.
++    lower = name.replace("_", " ")
+     if "hdfc" in lower:
+         return "hdfc"
+     if "icici" in lower:
+@@ -28,7 +87,9 @@
+         return "indusind"
+     if "kotak" in lower:
+         return "kotak"
+-    if "standard chartered" in lower:
++    # Standard Chartered e-statements are named
++    # STANCHART_<account>_<currency>_..._<DDMMYYYY>_<n>.pdf.
++    if "standard chartered" in lower or "stanchart" in lower:
+         return "sc"
+     if "yes bank" in lower:
+         return "yes"
+@@ -55,7 +116,7 @@
+     # so no card last4 can be inferred from the filename.
+     # We detect this pattern here so the PDF does not need to be opened
+     # just for bank identification.
+-    stem = lower.rsplit(".", 1)[0]  # strip extension to avoid matching the dot
++    stem = name.rsplit(".", 1)[0]  # strip extension to avoid matching the dot
+     # SBI numeric filenames: <reference_id>_<DDMMYYYY>.pdf
+     # OR any filename containing 'sbi'. The numeric-only branch is tightened to
+     # \d{10,16} (observed SBI reference IDs are always >=10 digits) to reduce
+@@ -120,7 +181,7 @@
+     'indusind', 'kotak', 'sc', 'yes', 'au', 'rbl', 'federal', 'indian_bank',
+     or None.
+     """
+-    filename = os.path.basename(pdf_path)
++    filename = _original_filename(os.path.basename(pdf_path))
+     bank = _detect_bank_from_filename(filename)
+     if bank:
+         return bank
+@@ -137,11 +198,17 @@
+         or bool(re.fullmatch(r"\d{10,16}_\d{8}", sbi_numeric_stem))
+     )
+     if not is_sbi_numeric_filename:
++        # HDFC Bank e-statements are named <BIN4><10 X><last 2>_<DD-MM-YYYY>_<n>.pdf
++        # (e.g. "4854XXXXXXXXXX12_01-01-2026_100.pdf"); match the layout so
++        # HDFC cards whose BIN is not listed below are still recognised.
++        if re.fullmatch(r"\d{4}x{10}\d{2}_\d{2}-\d{2}-\d{4}_\d+", sbi_numeric_stem):
++            return "hdfc"
+         bin_match = re.search(r"(\d{4})[xX*]+\d{2,4}", filename.lower())
+         if bin_match:
+             first4 = bin_match.group(1)
+             hdfc_bins = {"5522", "4386", "4567", "5241", "4543", "5254", "4213"}
+-            icici_bins = {"4568", "5243", "4998", "5236", "4389", "4315", "4998", "5270", "4329"}
++            # 4748: ICICI HPCL Coral ("4748XXXXXXXX1234_<n>_Retail_HPCL_NORM.pdf")
++            icici_bins = {"4568", "5243", "4998", "5236", "4389", "4315", "4998", "5270", "4329", "4748"}
+             axis_bins = {"4108", "4178", "5269", "4021", "4717"}
+             if first4 in hdfc_bins:
+                 return "hdfc"
+@@ -161,6 +228,16 @@
+ 
+     text_lower = text.lower()
+ 
++    # Broker, mutual fund, loan/EMI-schedule and bank account PDFs often name a
++    # bank in passing (e.g. a linked bank account); without this guard the
++    # first-match chain below labels them as that bank's card statement.
++    if _is_non_card_text(text_lower):
++        return None
++
++    # Issuer-specific name checked before the bare bank-name chain: other banks
++    # appear on a statement only in payment lines, and "hdfc" is matched first.
++    if "standard chartered" in text_lower:
++        return "sc"
+     if re.search(r"\bhdfc\b", text_lower) or "hdfc bank" in text_lower:
+         return "hdfc"
+     if re.search(r"\bicici\b", text_lower) or "icici bank" in text_lower:
+@@ -177,8 +254,6 @@
+         return "indusind"
+     if re.search(r"\bkotak\b", text_lower):
+         return "kotak"
+-    if "standard chartered" in text_lower:
+-        return "sc"
+     if "yes bank" in text_lower:
+         return "yes"
+     if "au small finance" in text_lower or "au bank" in text_lower:
+@@ -198,3 +273,38 @@
+         return "indian_bank"
+ 
+     return None
++
++
++def is_ignored_filename(filename: str) -> bool:
++    """True when the original filename matches BURNRATE_IGNORE_FILENAME_REGEX.
++
++    Lets the user list their own non-card documents (broker, loan, bank account
++    statements) that arrive through the Gmail query, so they are neither
++    downloaded nor turned into failed statement rows.
++    """
++    from backend.config import settings
++
++    pattern = settings.burnrate_ignore_filename_regex
++    if not pattern:
++        return False
++    try:
++        return re.search(pattern, _original_filename(filename), re.IGNORECASE) is not None
++    except re.error:
++        return False
++
++
++def is_non_card_document(pdf_path: str) -> bool:
++    """True when an (unlocked) PDF's first page is clearly not a card statement.
++
++    Lets callers that already know the bank (e.g. from a password that worked)
++    skip broker, mutual fund, loan and bank account PDFs instead of parsing
++    them as that bank's card statement.
++    """
++    try:
++        with pdfplumber.open(pdf_path) as pdf:
++            if not pdf.pages:
++                return False
++            text = pdf.pages[0].extract_text() or ""
++    except Exception:
++        return False
++    return _is_non_card_text(text.lower())
+diff -ruN --exclude __pycache__ burnrate-orig/backend/parsers/sc.py /opt/homebrew/opt/burnrate/libexec/backend/parsers/sc.py
+--- backend/parsers/sc.py	1970-01-01 05:30:00
++++ backend/parsers/sc.py	2026-10-17 23:35:12
+@@ -0,0 +1,75 @@
++"""Standard Chartered credit card statement parser.
++
++Statement layout (page 1):
++  - Header: "Statement Period : 08 Jan 2026 To 07 Feb 2026",
++    "Payment Due Date : 28 Feb 2026", "Total Payment Due (INR) : 1,234.56",
++    "Credit Limit (INR) : 100,000.00" (a credit balance ends in "CR")
++  - Card: "<BIN6>XXXXXX<last4>" above the transaction table
++  - Transactions: "DDMMYY <description> [<reference>] <rewards earned> <rewards type> <amount> [CR]"
++    e.g. "150126 SOME MERCHANT <23-digit ref> 0 001 250.00"; a wrapped
++    description (e.g. the city) continues on the next line and is ignored.
++"""
++
++import logging
++import re
++from datetime import date, datetime
++from typing import Optional, Tuple
++
++from backend.parsers.base import ParsedTransaction
++from backend.parsers.generic import GenericParser
++
++logger = logging.getLogger(__name__)
++
++_PERIOD_RE = re.compile(
++    r"Statement\s+Period\s*:\s*(\d{1,2}\s+[A-Za-z]{3}\s+\d{4})\s+To\s+(\d{1,2}\s+[A-Za-z]{3}\s+\d{4})",
++    re.IGNORECASE,
++)
++
++_TXN_RE = re.compile(
++    r"^(\d{6})\s+(.+?)\s+(\d+(?:\.\d+)?)\s+(\d{3})\s+([\d,]+\.\d{2})(?:\s+(CR))?$",
++    re.IGNORECASE,
++)
++
++# Transaction reference numbers printed between description and rewards columns.
++_REFERENCE_RE = re.compile(r"\s*\b\d{12,}\b")
++
++
++class StandardCharteredParser(GenericParser):
++    """Parser for Standard Chartered credit card statements."""
++
++    def __init__(self, bank: str = "sc"):
++        super().__init__(bank=bank)
++
++    def _extract_period(self, text: str) -> Tuple[Optional[date], Optional[date]]:
++        m = _PERIOD_RE.search(text)
++        if not m:
++            return super()._extract_period(text)
++        return _parse_long_date(m.group(1)), _parse_long_date(m.group(2))
++
++    def _parse_transaction_line(self, line: str) -> Optional[ParsedTransaction]:
++        m = _TXN_RE.match(line)
++        if not m:
++            return None
++        try:
++            parsed_date = datetime.strptime(m.group(1), "%d%m%y").date()
++            amount = float(m.group(5).replace(",", ""))
++        except ValueError:
++            return None
++        if amount <= 0:
++            return None
++
++        raw_desc = _REFERENCE_RE.sub("", m.group(2)).strip()
++        return ParsedTransaction(
++            date=parsed_date,
++            merchant=raw_desc[:512] if raw_desc else "Unknown",
++            amount=amount,
++            type="credit" if m.group(6) else "debit",
++            description=raw_desc,
++        )
++
++
++def _parse_long_date(value: str) -> Optional[date]:
++    try:
++        return datetime.strptime(value.strip(), "%d %b %Y").date()
++    except ValueError:
++        return None
+diff -ruN --exclude __pycache__ burnrate-orig/backend/services/folder_watcher.py /opt/homebrew/opt/burnrate/libexec/backend/services/folder_watcher.py
+--- backend/services/folder_watcher.py	2026-10-08 03:31:13
++++ backend/services/folder_watcher.py	2026-10-17 23:02:41
+@@ -7,11 +7,13 @@
+ also processed.
+ """
+ 
++import hashlib
+ import logging
++import os
+ import threading
+ import time
+ from pathlib import Path
+-from typing import Callable, Optional
++from typing import Callable, Optional, Set
+ 
+ from watchdog.events import FileSystemEventHandler
+ from watchdog.observers import Observer
+@@ -22,7 +24,35 @@
+ 
+ _watcher_observer: Optional[Observer] = None
+ 
++# Files that their creator (Gmail sync) submits to the processing queue itself.
++# The watcher skips them so each file is processed once, watcher running or not.
++_claimed_paths: Set[str] = set()
++_claimed_lock = threading.Lock()
+ 
++
++def _path_key(path) -> str:
++    # APFS is case-insensitive and the configured folder may differ in case or
++    # go through a symlink, so compare resolved, lower-cased paths.
++    return os.path.realpath(str(path)).lower()
++
++
++def claim_path(path) -> None:
++    """Mark *path* as queued by its creator; call before the file appears."""
++    with _claimed_lock:
++        _claimed_paths.add(_path_key(path))
++
++
++def release_path(path) -> None:
++    """Undo claim_path, e.g. when the file could not be written."""
++    with _claimed_lock:
++        _claimed_paths.discard(_path_key(path))
++
++
++def _is_claimed(path) -> bool:
++    with _claimed_lock:
++        return _path_key(path) in _claimed_paths
++
++
+ def _log_processing_result(db_session_factory: Callable, file_name: str, result: dict) -> None:
+     """Persist a processing result for frontend polling."""
+     from backend.models.models import ProcessingLog
+@@ -45,6 +75,20 @@
+         db.close()
+ 
+ 
++def log_processing_outcome(db_session_factory: Callable, file_name: str, future) -> None:
++    """Done-callback for a processing_queue future: log it and persist a ProcessingLog."""
++    try:
++        result = future.result()
++        logger.info("Processed %s: %s", file_name, result)
++        _log_processing_result(db_session_factory, file_name, result)
++    except Exception as e:
++        logger.exception("Failed to process %s: %s", file_name, e)
++        _log_processing_result(
++            db_session_factory, file_name,
++            {"status": "error", "message": "Processing failed unexpectedly", "count": 0},
++        )
++
++
+ def _wait_for_file_stable(path: Path, timeout: float = 15.0, interval: float = 0.5) -> bool:
+     """Wait until the file size stops changing, indicating the write is complete."""
+     last_size = -1
+@@ -84,6 +128,9 @@
+                 changing.  Set to False for the initial scan where
+                 files are already fully written.
+         """
++        if _is_claimed(path):
++            logger.debug("Skipping %s: already queued by Gmail sync", path.name)
++            return
+         is_csv = path.suffix.lower() == ".csv"
+         source = "BANK" if is_csv else "CC"
+         logger.info("Detected new %s: %s", "CSV" if is_csv else "PDF", path.name)
+@@ -101,16 +148,7 @@
+         )
+ 
+     def _on_done(self, file_name: str, future):
+-        try:
+-            result = future.result()
+-            logger.info("Processed %s: %s", file_name, result)
+-            _log_processing_result(self.db_session_factory, file_name, result)
+-        except Exception as e:
+-            logger.exception("Failed to process %s: %s", file_name, e)
+-            _log_processing_result(
+-                self.db_session_factory, file_name,
+-                {"status": "error", "message": "Processing failed unexpectedly", "count": 0},
+-            )
++        log_processing_outcome(self.db_session_factory, file_name, future)
+ 
+     @staticmethod
+     def _should_process(path: Path) -> bool:
+@@ -177,7 +215,20 @@
+         len(eligible),
+         watch_dir,
+     )
++    # Submit one file per distinct content: identical copies (e.g. repeated
++    # Gmail downloads) would only be duplicates, and parsing them concurrently
++    # can race past the file-hash dedup.
++    seen_hashes: Set[str] = set()
+     for file_path in eligible:
++        try:
++            digest = hashlib.sha256(file_path.read_bytes()).hexdigest()
++        except OSError:
++            digest = None
++        if digest is not None:
++            if digest in seen_hashes:
++                logger.debug("Initial scan: skipping %s (same content as an earlier file)", file_path.name)
++                continue
++            seen_hashes.add(digest)
+         handler._enqueue_file(file_path, wait_for_stable=False)
+ 
+ 
+diff -ruN --exclude __pycache__ burnrate-orig/backend/services/gmail_sync.py /opt/homebrew/opt/burnrate/libexec/backend/services/gmail_sync.py
+--- backend/services/gmail_sync.py	2026-10-08 03:31:13
++++ backend/services/gmail_sync.py	2026-10-17 23:20:49
+@@ -3,13 +3,15 @@
+ from __future__ import annotations
+ 
+ import base64
++import functools
++import hashlib
+ import logging
+ import os
+ import re
+-import uuid
++import threading
+ from datetime import datetime
+ from pathlib import Path
+-from typing import Any, Dict, List, Optional
++from typing import Any, Dict, List, Optional, Set, Tuple
+ 
+ from google.auth.transport.requests import Request
+ from google.oauth2.credentials import Credentials
+@@ -17,9 +19,10 @@
+ from googleapiclient.errors import HttpError
+ from sqlalchemy.orm import Session
+ 
+-from backend.models.database import UPLOADS_DIR
++from backend.models.database import UPLOADS_DIR, SessionLocal
+ from backend.models.models import OAuthCredential, Settings
+-from backend.services import processing_queue
++from backend.parsers.detector import is_ignored_filename
++from backend.services import folder_watcher, processing_queue
+ from backend.services.oauth_tokens import decrypt_secret, encrypt_secret
+ from backend.config import settings
+ 
+@@ -27,8 +30,13 @@
+ 
+ GMAIL_READONLY = "https://www.googleapis.com/auth/gmail.readonly"
+ MIN_AUTO_SYNC_SECONDS = 3600
+-MAX_MESSAGES_PER_SYNC = 40
++# Upper bound on messages scanned per sync; listed in pages of _LIST_PAGE_SIZE.
++MAX_MESSAGES_PER_SYNC = 200
++_LIST_PAGE_SIZE = 100
+ 
++# Startup, post-connect and manual syncs can overlap; run them one at a time.
++_sync_lock = threading.Lock()
++
+ _GMAIL_QUERY = (
+     "has:attachment newer_than:120d "
+     "(filename:pdf OR filename:csv OR filename:xlsx OR filename:xls) "
+@@ -81,17 +89,62 @@
+     db.commit()
+ 
+ 
+-def _save_attachments_for_message(service, msg_id: str, dest: Path) -> int:
++def _safe_filename(fn: str) -> str:
++    return re.sub(r"[^a-zA-Z0-9._-]+", "_", fn)[:120]
++
++
++def _attachment_filename(msg_id: str, part_id: str, fn: str) -> str:
++    """Deterministic name, so a later sync recognises an attachment it already saved."""
++    token = hashlib.sha1(f"{msg_id}/{part_id}/{fn}".encode()).hexdigest()[:8]
++    return f"gmail_{msg_id[:12]}_{token}_{_safe_filename(fn)}"
++
++
++def _already_saved(dest: Path, msg_id: str, fn: str, name: str, own_names: Set[str]) -> bool:
++    if (dest / name).exists():
++        return True
++    # Older versions put a random token where the hash now goes; count those
++    # copies as saved too (but not this message's other same-named parts).
++    legacy = dest.glob(f"gmail_{msg_id[:12]}_????????_{_safe_filename(fn)}")
++    return any(p.name not in own_names for p in legacy)
++
++
++def _write_atomically(out: Path, raw: bytes) -> None:
++    """Write via a hidden temp file so *out* never exists half-written."""
++    tmp = out.with_name(f".{out.name}.part")
++    try:
++        tmp.write_bytes(raw)
++        # Claim before the final name appears so the folder watcher leaves it
++        # to us; this sync submits the file itself.
++        folder_watcher.claim_path(out)
++        os.replace(tmp, out)
++    except Exception:
++        folder_watcher.release_path(out)
++        tmp.unlink(missing_ok=True)
++        raise
++
++
++def _save_attachments_for_message(service, msg_id: str, dest: Path) -> Tuple[int, int]:
++    """Save and enqueue new attachments of one message; returns (queued, skipped)."""
+     msg = service.users().messages().get(userId="me", id=msg_id, format="full").execute()
+     payload = msg.get("payload") or {}
+-    n = 0
+-    for part in _iter_parts(payload):
++    candidates = []
++    for i, part in enumerate(_iter_parts(payload)):
+         fn = part.get("filename") or ""
+         if not fn:
+             continue
+         ext = Path(fn).suffix.lower()
+         if ext not in _ALLOWED_EXT:
+             continue
++        if is_ignored_filename(_safe_filename(fn)):
++            continue
++        name = _attachment_filename(msg_id, part.get("partId") or str(i), fn)
++        candidates.append((part, fn, ext, name))
++    own_names = {c[3] for c in candidates}
++    n = skipped = 0
++    for part, fn, ext, name in candidates:
++        if _already_saved(dest, msg_id, fn, name, own_names):
++            skipped += 1
++            continue
+         body = part.get("body") or {}
+         raw: Optional[bytes] = None
+         if body.get("data"):
+@@ -110,16 +163,55 @@
+             raw = base64.urlsafe_b64decode(att["data"].encode())
+         if not raw:
+             continue
+-        safe = re.sub(r"[^a-zA-Z0-9._-]+", "_", fn)[:120]
+-        out = dest / f"gmail_{msg_id[:12]}_{uuid.uuid4().hex[:8]}_{safe}"
+-        out.write_bytes(raw)
+-        processing_queue.submit(str(out.resolve()), source=_source_for_suffix(ext))
++        out = dest / name
++        _write_atomically(out, raw)
++        future = processing_queue.submit(str(out.resolve()), source=_source_for_suffix(ext))
++        future.add_done_callback(
++            functools.partial(folder_watcher.log_processing_outcome, SessionLocal, out.name)
++        )
+         n += 1
+-    return n
++    return n, skipped
+ 
+ 
++def _list_message_ids(service) -> List[str]:
++    """Page through matching messages (newest first), up to MAX_MESSAGES_PER_SYNC."""
++    ids: List[str] = []
++    page_token: Optional[str] = None
++    while len(ids) < MAX_MESSAGES_PER_SYNC:
++        kwargs: Dict[str, Any] = {
++            "userId": "me",
++            "q": _GMAIL_QUERY,
++            "maxResults": min(_LIST_PAGE_SIZE, MAX_MESSAGES_PER_SYNC - len(ids)),
++        }
++        if page_token:
++            kwargs["pageToken"] = page_token
++        try:
++            lst = service.users().messages().list(**kwargs).execute()
++        except HttpError:
++            if not ids:
++                raise
++            # Keep what we have; the rest is picked up by the next sync.
++            logger.warning("Gmail API list failed after %d messages; continuing with those", len(ids))
++            break
++        ids.extend(m["id"] for m in lst.get("messages", []))
++        page_token = lst.get("nextPageToken")
++        if not page_token:
++            break
++    if page_token and len(ids) >= MAX_MESSAGES_PER_SYNC:
++        logger.warning("Gmail sync capped at %d messages; older matches were not scanned", MAX_MESSAGES_PER_SYNC)
++    return list(dict.fromkeys(ids))
++
++
+ def run_gmail_sync(db: Session, *, force: bool = False) -> Dict[str, Any]:
+-    """List recent statement-like messages, save attachments, enqueue processing."""
++    """List recent statement-like messages, save attachments, enqueue processing.
++
++    Idempotent: attachments saved by an earlier sync are skipped, not re-downloaded.
++    """
++    with _sync_lock:
++        return _run_gmail_sync(db, force=force)
++
++
++def _run_gmail_sync(db: Session, *, force: bool) -> Dict[str, Any]:
+     if not settings.google_oauth_client_id:
+         return {"status": "error", "message": "Gmail OAuth is not configured"}
+ 
+@@ -159,13 +251,7 @@
+ 
+     try:
+         service = build("gmail", "v1", credentials=creds, cache_discovery=False)
+-        lst = (
+-            service.users()
+-            .messages()
+-            .list(userId="me", q=_GMAIL_QUERY, maxResults=MAX_MESSAGES_PER_SYNC)
+-            .execute()
+-        )
+-        ids = [m["id"] for m in lst.get("messages", [])]
++        ids = _list_message_ids(service)
+     except HttpError as e:
+         logger.warning("Gmail API list failed: %s", e)
+         return {"status": "error", "message": f"Gmail API error: {e}"}
+@@ -173,10 +259,12 @@
+         logger.exception("Gmail sync failed")
+         return {"status": "error", "message": str(e)}
+ 
+-    total = 0
++    total = skipped = 0
+     for mid in ids:
+         try:
+-            total += _save_attachments_for_message(service, mid, dest)
++            queued, already = _save_attachments_for_message(service, mid, dest)
++            total += queued
++            skipped += already
+         except HttpError as e:
+             logger.warning("Skip message %s: %s", mid, e)
+         except Exception:
+@@ -186,4 +274,9 @@
+         settings_row.last_gmail_sync = datetime.utcnow()
+         db.commit()
+ 
+-    return {"status": "ok", "messages_scanned": len(ids), "attachments_queued": total}
++    return {
++        "status": "ok",
++        "messages_scanned": len(ids),
++        "attachments_queued": total,
++        "attachments_skipped": skipped,
++    }
+diff -ruN --exclude __pycache__ burnrate-orig/backend/services/pdf_unlock.py /opt/homebrew/opt/burnrate/libexec/backend/services/pdf_unlock.py
+--- backend/services/pdf_unlock.py	2026-10-08 03:31:13
++++ backend/services/pdf_unlock.py	2026-10-17 23:10:04
+@@ -265,6 +265,23 @@
+                 _add(n4u + l4)
+                 _add(n4l + l4)
+ 
++    elif bank.lower() == "sc":
++        # Standard Chartered: UPPERCASE first 4 letters of name + DOB as DDMMYY
++        # (observed on SC credit card e-statements). The generic list
++        # below has no name + DDMMYY variant.
++        n4u = name4.upper()
++        fnu = first_name.upper()
++        _add(n4u + ddmmyy)
++        _add(fnu + ddmmyy)
++        _add(n4u + ddmm)
++        _add(fnu + ddmm)
++        _add(n4u + ddmmyyyy)
++        _add(ddmmyyyy)
++        _add(ddmmyy)
++        # lowercase variants
++        _add(name4.lower() + ddmmyy)
++        _add(name4.lower() + ddmm)
++
+     else:
+         # Generic password patterns for other banks
+         n4u = name4.upper()
+diff -ruN --exclude __pycache__ burnrate-orig/backend/services/statement_processor.py /opt/homebrew/opt/burnrate/libexec/backend/services/statement_processor.py
+--- backend/services/statement_processor.py	2026-10-08 03:31:13
++++ backend/services/statement_processor.py	2026-10-17 23:33:36
+@@ -3,6 +3,7 @@
+ import hashlib
+ import logging
+ import os
++import threading
+ from decimal import Decimal, ROUND_HALF_UP
+ from pathlib import Path
+ from typing import Callable, Dict, List, Optional, Type
+@@ -25,7 +26,15 @@
+ 
+ ALLOWED_EXTENSIONS = {".pdf", ".csv"}
+ 
++# File hashes currently being processed in this process. The hash dedupe query
++# cannot see another worker's uncommitted row, and rows with card_last4=NULL
++# (password_needed, card_last4_not_parsed, ...) never trip the
++# (file_hash, card_last4) unique constraint, so the same file processed twice
++# concurrently would otherwise produce two rows.
++_inflight_lock = threading.Lock()
++_inflight_hashes: set = set()
+ 
++
+ def _parsed_currency(parsed) -> str:
+     c = getattr(parsed, "currency", None) or "INR"
+     if isinstance(c, str) and len(c) >= 3:
+@@ -44,6 +53,7 @@
+     from backend.parsers.idfc_first import IDFCFirstBankParser
+     from backend.parsers.indian_bank import IndianBankParser
+     from backend.parsers.sbi import SBICardParser
++    from backend.parsers.sc import StandardCharteredParser
+ 
+     return {
+         "hdfc": HDFCParser,
+@@ -54,6 +64,7 @@
+         "indian_bank": IndianBankParser,
+         "idfc_first": IDFCFirstBankParser,
+         "sbi": SBICardParser,
++        "sc": StandardCharteredParser,
+     }
+ 
+ 
+@@ -245,10 +256,19 @@
+     elif source == "BANK" and not is_csv:
+         source = "CC"
+     working_path = pdf_path
++    claimed_hash = None
++    # "unknown" is the placeholder stored on rows without a bank (reparse passes
++    # it back); treat it as no bank so detection runs.
++    if bank == "unknown":
++        bank = None
+ 
+     try:
+         if not os.path.isfile(pdf_path):
+             return {"status": "error", "message": "File not found", "count": 0}
++        from backend.parsers.detector import is_ignored_filename
++        if is_ignored_filename(os.path.basename(pdf_path)):
++            logger.info("Skipping %s — matches BURNRATE_IGNORE_FILENAME_REGEX", os.path.basename(pdf_path))
++            return {"status": "error", "message": "Ignored by filename rule", "count": 0}
+         roots = allowed_roots_for_statements(db_session)
+         if not _validate_pdf_path(pdf_path, roots):
+             return {"status": "error", "message": "Invalid file path", "count": 0}
+@@ -259,6 +279,22 @@
+ 
+         file_hash = _compute_hash(pdf_path)
+ 
++        with _inflight_lock:
++            if file_hash in _inflight_hashes:
++                logger.info(
++                    "Skipping %s — same file is already being processed",
++                    os.path.basename(pdf_path),
++                )
++                return {
++                    "status": "duplicate",
++                    "message": "Statement already being processed",
++                    "count": 0,
++                    "period": None,
++                    "bank": bank,
++                }
++            _inflight_hashes.add(file_hash)
++            claimed_hash = file_hash
++
+         # For combined dual-card statements (e.g. Scapia), one PDF produces
+         # two Statement rows with the same file_hash but different card_last4.
+         # We defer the per-card dedup check to after parsing for them.
+@@ -331,9 +367,16 @@
+             if profile:
+                 from backend.services.pdf_unlock import unlock_pdf_with_password, generate_passwords
+                 
+-                banks_to_try = [bank] if bank else SUPPORTED_BANKS
++                # Known bank: its own list first, then the other banks' lists
++                # (banks share name/DOB formats), keeping the known bank label.
++                banks_to_try = (
++                    [bank] + [b for b in SUPPORTED_BANKS if b != bank] if bank else SUPPORTED_BANKS
++                )
+                 for try_bank in banks_to_try:
+-                    try_card_last4s = card_last4s if bank else _get_card_last4s(db_session, bank=try_bank)
++                    try_card_last4s = (
++                        card_last4s if try_bank == bank
++                        else _get_card_last4s(db_session, bank=try_bank)
++                    )
+                     passwords = generate_passwords(
+                         bank=try_bank,
+                         name=profile.name,
+@@ -347,10 +390,20 @@
+                         
+                     unlocked_path, _ = unlock_pdf_with_password(pdf_path, passwords, allowed_roots=roots)
+                     if unlocked_path:
+-                        bank = try_bank
+                         working_path = unlocked_path
+                         unlocked = unlocked_path
+-                        logger.info("Unlocked with generated password for bank=%s", try_bank)
++                        if not bank:
++                            # Bank was unknown: the first list that opens the file
++                            # (usually HDFC's, which includes generic DOB/name
++                            # variants) says nothing about the issuer. Detect from
++                            # the unlocked content, as Step 2 does.
++                            from backend.parsers.detector import detect_bank
++                            detected = detect_bank(working_path)
++                            bank = detected if detected in SUPPORTED_BANKS else None
++                        logger.info(
++                            "Unlocked with generated password from bank=%s list; bank=%s",
++                            try_bank, bank,
++                        )
+                         break
+ 
+             # Step 2: Check DB encrypted_password (fallback)
+@@ -382,12 +435,35 @@
+                 }
+ 
+         if not bank:
++            # No supported card issuer found (not a card statement, or an
++            # unsupported bank) — skip without creating a failed statement row.
++            logger.info(
++                "Skipping %s — could not detect a supported card issuer",
++                os.path.basename(pdf_path),
++            )
+             return {
+                 "status": "error",
+                 "message": "Could not detect bank",
+                 "count": 0,
+             }
+ 
++        # A bank taken from the filename, the caller or a password list says
++        # nothing about the content: skip clearly non-card PDFs (broker, mutual
++        # fund, loan, bank account) the same way, without a statement row.
++        from backend.parsers.detector import is_non_card_document
++        if is_non_card_document(working_path):
++            logger.info(
++                "Skipping %s — not a credit card statement (bank=%s)",
++                os.path.basename(pdf_path), bank,
++            )
++            return {
++                "status": "error",
++                "message": "Not a credit card statement",
++                "count": 0,
++                "period": None,
++                "bank": bank,
++            }
++
+         parser_key = bank
+         if bank == "federal_scapia":
+             bank = "federal"
+@@ -833,6 +909,9 @@
+             "bank": bank,
+         }
+     finally:
++        if claimed_hash:
++            with _inflight_lock:
++                _inflight_hashes.discard(claimed_hash)
+         if working_path != pdf_path and os.path.isfile(working_path):
+             try:
+                 os.remove(working_path)
+@@ -916,7 +995,6 @@
+             db_session.rollback()
+         else:
+             statement = Statement(
+-                encrypted_password=encrypted_password_to_save,
+                 bank=bank,
+                 card_last4=card_last4,
+                 period_start=None,
+@@ -951,7 +1029,6 @@
+ 
+     cur = _parsed_currency(parsed)
+     statement = Statement(
+-        encrypted_password=encrypted_password_to_save,
+         bank=bank,
+         card_last4=card_last4,
+         period_start=parsed.period_start,

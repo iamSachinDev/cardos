@@ -43,7 +43,13 @@ Burnrate can pull statement attachments (PDF, CSV, XLS) from Gmail with read-onl
 3. Run `npm run gmail:setup -- ~/Downloads/client_secret_….json` (or run it without a path to paste the ID and secret). It writes Burnrate's `libexec/.env.production` (mode 600), points the OAuth redirect back to CardOS Settings, and restarts the Burnrate service.
 4. Open Settings in CardOS and choose **Connect Gmail**. The first sync runs as soon as Google redirects back.
 
-After that, Burnrate syncs Gmail each time its service starts (at most hourly), and **Sync Gmail** in the top bar or **Sync now** in Settings syncs on demand. Each sync saves matching attachments from the last 120 days to the watch folder; Burnrate skips statements it has already imported. Rerun `npm run gmail:setup` after `brew upgrade burnrate`, because the upgrade replaces the `libexec` folder. While the consent screen is in Testing, Google expires the connection after 7 days; choose **Reconnect** in Settings, or publish the consent screen for your own use.
+After that, Burnrate syncs Gmail each time its service starts (at most hourly), and **Sync Gmail** in the top bar or **Sync now** in Settings syncs on demand. Each sync scans up to 200 matching emails from the last 120 days and saves new attachments to the watch folder; attachments saved by an earlier sync are skipped. While the consent screen is in Testing, Google expires the connection after 7 days; choose **Reconnect** in Settings, or publish the consent screen for your own use.
+
+### Burnrate patch
+
+[patches/burnrate-0.5.2.patch](patches/burnrate-0.5.2.patch) fixes Burnrate 0.5.2 issues found with Gmail sync: duplicate downloads and double processing, the 40-email cap, bank detection for Gmail-named files (ICICI, Standard Chartered, SBI), a Standard Chartered statement parser, password fallbacks, and skipping non-card PDFs (broker, mutual fund, loan, bank account, EMI letters) instead of creating failed rows. To ignore other non-card attachments, set `BURNRATE_IGNORE_FILENAME_REGEX` in Burnrate's `.env.production`.
+
+`brew upgrade burnrate` replaces the `libexec` folder, which removes both the patch and `.env.production`. Afterwards, reapply the patch with `patch -p0 -d "$(brew --prefix burnrate)/libexec" < patches/burnrate-0.5.2.patch`, rerun `npm run gmail:setup`, and restart the service. If the patch no longer applies to a newer Burnrate, check whether the new version already fixes these issues.
 
 ## Security and local configuration
 
