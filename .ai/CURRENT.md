@@ -12,8 +12,8 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 
 | Field | Value |
 |---|---|
-| Phase | 4: Orchestration ([status](../docs/ai-engineering/PHASE-STATUS.md#p4-orchestration)) |
-| Chunk | P4-C5a and P4-C5b: the Claude-to-Codex handoff demo (approved by the maintainer on 2026-10-18), after the local commit of the helper and docs |
+| Phase | 4: Orchestration, Implemented and verified ([status](../docs/ai-engineering/PHASE-STATUS.md#p4-orchestration)). Phase 5 not started: needs the maintainer's approval |
+| Chunk | None active. The Claude-to-Codex handoff demo passed; its record is `.ai/tasks/p4-handoff-demo.md` |
 | Branches / worktree | `ai-os/phase-4` in `../cardos-ai-os`, stacked on `ai-os/phase-3` (`9b15113b`), then `ai-os/phase-2` (`16e95c5a`), then `main` at `e7598889`. None is merged or pushed |
 | Owner | Claude Code coordinator session, until the maintainer merges or closes the branches |
 | Main checkout | `../cardos` on `main`: the maintainer and Codex work there. `main` has moved ahead of the AI-OS base (`git log --oneline e7598889..main`; see known problem 6); none of those commits touch AI-OS files. Don't edit it from these branches |
@@ -23,7 +23,7 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 ## Done
 
 - **Phase 2** (`ai-os/phase-2`) and **Phase 3** (`ai-os/phase-3`): Implemented and verified. Shared rules, `.ai/` knowledge, Spec Kit 1.2.1 with both integrations, the proposed constitution and spec 001.
-- **Phase 4 so far** (uncommitted on `ai-os/phase-4`):
+- **Phase 4** (`ai-os/phase-4`, Implemented and verified):
   - Codex ignores a repo's `.codex/config.toml` in an untrusted project; `AGENTS.md` is the only shared channel (P4-C1).
   - `scripts/ai-worktree.mjs` (`npm run ai:worktree`): `new`, `list`, `handoff` and `remove`. Branch `ai/<agent>/<task>`, worktree `../cardos-wt/<agent>-<task>`, provenance in git config, a per-task state file `.ai/tasks/<task>.md`.
   - [Handoff runbook](runbooks/handoff.md), `AGENTS.md` §2, §6 and §10, `CLAUDE.md`, `INDEX.md`, the roadmap and PHASE-STATUS.
@@ -37,6 +37,8 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
   - `branch -d` from the main checkout cannot delete a branch merged into a base other than `main`.
 
   Both are fixed. Two independent reviews (code and docs) followed; their fixes are in, and the sweep passes 234 of 234.
+
+- **Handoff demo:** Claude started `p4-handoff-demo`, committed and handed off; a fresh Codex session continued in its own worktree and committed; neither worktree was touched by the other agent; both were removed cleanly.
 
 ## Known problems (not fixed; each needs the maintainer)
 
@@ -58,6 +60,7 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 
 ## Next steps
 
-1. Run the handoff demo with the helper: Claude starts a task, commits and hands it to Codex; Codex continues in its own worktree and commits. Record the evidence in PHASE-STATUS, then clean up with `remove`.
+1. The maintainer reviews the three stacked branches and decides on the items above.
+2. On approval, start Phase 5 (guardrails) in its own worktree with `npm run ai:worktree`.
 
 Relevant commit: the latest commit on `ai-os/phase-4` (`git log -1 ai-os/phase-4`).
