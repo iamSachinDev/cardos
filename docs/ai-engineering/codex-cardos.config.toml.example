@@ -58,12 +58,23 @@ extends = ":workspace"
 # No outbound access from sandboxed commands. `npm ci`, `git push` and `gh` will ask for approval to run outside it.
 enabled = false
 
-# No MCP servers in this profile: none is needed for CardOS work. Serena (Phase 6) will be enabled explicitly.
+# MCP: every server is off except Serena, pinned and read-only (see docs/ai-engineering/MCP-REGISTRY.md).
 # One block per server defined in your own config.toml (these three are examples; list yours).
 [mcp_servers.headroom]
 enabled = false
 [mcp_servers.serena]
-enabled = false
+# Pinned, read-only code intelligence (project .serena/project.yml sets read_only: true). MCP servers run outside the
+# Codex sandbox, so the tool allowlist below is what keeps this profile read-only: Serena's codex context also
+# exposes activate_project (could switch to a non-read-only registered project) and search_for_pattern (does not
+# filter an explicit path into a gitignored folder, verified on serena-agent 2.0.0).
+enabled = true
+command = "uvx"
+args = ["--from", "serena-agent==2.0.0", "serena", "start-mcp-server", "--project-from-cwd", "--context", "codex", "--enable-web-dashboard", "False", "--open-web-dashboard", "False"]
+startup_timeout_sec = 60
+enabled_tools = ["find_symbol", "find_referencing_symbols", "find_declaration", "find_implementations", "get_symbols_overview", "get_diagnostics_for_file", "initial_instructions"]
+
+[mcp_servers.serena.env]
+SERENA_USAGE_REPORTING = "false"
 [mcp_servers.node_repl]
 enabled = false
 

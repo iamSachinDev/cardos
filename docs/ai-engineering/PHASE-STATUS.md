@@ -34,7 +34,7 @@ This table holds each phase's status and next action. Edit it, and the Phase 2 c
 | [P3](#p3-spec-kit) | Spec Kit | Implemented and verified | P2 | The maintainer ratifies the constitution and accepts spec 001 (document statuses, tracked in those files), then reviews `ai-os/phase-3`. |
 | [P4](#p4-orchestration) | Orchestration | Implemented and verified | P2, P3 | None. The maintainer reviews `ai-os/phase-4` (stacked on phases 2 and 3). |
 | [P5](#p5-guardrails) | Guardrails | Partially implemented | P2, P4 | The maintainer decides: push and let CI run once, then apply the ruleset on `main` (P5-C5); install the Codex command rules globally or not (P5-C2). |
-| [P6](#p6-code-intelligence-and-memory) | Code intelligence and memory | Not started | P2, P5 | Pin Serena v2 and add it to Claude Code. |
+| [P6](#p6-code-intelligence-and-memory) | Code intelligence and memory | Implemented and verified | P2, P5 | The maintainer decides: accept the 5-day-old Serena pin as an exception, pin Serena in the default Codex config, and accept ADR 0002. |
 | [P7](#p7-model-routing) | Model routing | Not started | P2 | List the models and effort levels each CLI offers. |
 | [P8](#p8-docs-automation) | Docs automation | Not started | P2, P5 | List which docs are applicable to automate. |
 | [P9](#p9-evaluation-and-quality) | Evaluation and quality | Not started | P5 | Choose the `src/lib` test scope for Vitest. |
@@ -201,12 +201,24 @@ Routing in this phase: two writer agents (balanced tier), two independent review
 | Field | Value |
 |---|---|
 | Completion criteria | Serena v2 pinned and working in both agents; an MCP registry; `.ai/` lifecycle rules; the ai-memory decision recorded (current verdict: DEFER) ([roadmap](IMPLEMENTATION-ROADMAP.md#p6-code-intelligence-and-memory)) |
-| Chunks | Defined when the phase starts |
-| Verification evidence | None yet |
-| Blockers | None recorded |
-| Security findings | None yet. Constraints: no real data in memory; ai-memory is DEFER because its default hooks capture prompts and tool calls; Serena's GPL-3.0 license is fine for local use |
-| Documentation status | Not started |
-| Git commit | None |
+| Chunks | See the chunk table below |
+| Verification evidence | Recorded per chunk below |
+| Blockers | None. Pinning Serena in the maintainer's default Codex config is the maintainer's choice (one-line change in [MCP-REGISTRY.md](MCP-REGISTRY.md)'s source report; the `cardos` profile is pinned) |
+| Security findings | MCP servers run outside both agents' sandboxes, so Serena is read-only here. Synthetic test (2026-10-18): Serena's `search_for_pattern` returned the contents of git-ignored folders when given their path, so all raw-file tools are excluded, denied and left out of the Codex allowlist. Serena 2.0.0 sends a usage report at startup and its dashboard checks for news and updates; both are turned off. The committed `language_servers: []` meant symbol tools never worked; now `typescript`. Independent review (2026-10-18, synthetic project, MCP stdio calls): `read_memory` followed a symlink in `.serena/memories/` to a file outside the project, so `read_memory` and `list_memories` are now excluded and denied too; a new 2.0.0 global config defaults to the REPL interface, which ignores `read_only` and `excluded_tools` and ran arbitrary Python, so `.serena/project.yml` pins `agent_interface: tools`; in the `codex` context `activate_project` switched to another registered project and re-enabled `search_for_pattern`, so the Codex allowlist is what blocks it. headroom keeps a local copy of anything compressed, so real data must never pass through it. A writer agent printed Serena's local dashboard secret (not a CardOS or Burnrate credential) into its own transcript while reading `~/.serena/serena_config.yml` |
+| Documentation status | Implemented and verified |
+| Git commit | Local commit on `ai-os/phase-6`, not pushed: `git log -1 ai-os/phase-6`. Base: `005496bb` on `ai-os/phase-5` |
+
+**Chunks:**
+
+| Chunk | Deliverable | Status | Evidence |
+|---|---|---|---|
+| P6-C0 | Branch `ai-os/phase-6`, stacked on `ai-os/phase-5` | Implemented and verified | `git log` shows it at `005496bb` (2026-10-18) |
+| P6-C1 | Serena 2.0.0 pinned and read-only for Claude Code (`.mcp.json`, `.serena/project.yml`, `enabledMcpjsonServers` and 24 deny rules in `.claude/settings.json`) | Implemented and verified | `claude -p` (haiku) with only Serena tools found `apiMutate` in `src/lib/live.ts` and its callers via `find_symbol` and `find_referencing_symbols`; asked to edit or write a memory it had no such tool and changed nothing; the deny rules also hid the writing tools of a writable scratch project; Conftest passes (2026-10-18) |
+| P6-C2 | Serena 2.0.0 pinned for Codex in the `cardos` profile (7-tool allowlist after the independent review; example in the repo) | Implemented and verified | `codex exec -p cardos -s read-only` JSON events show `mcp_tool_call` on `serena` (`find_symbol`, `find_referencing_symbols`) with the correct answer; `write_memory` and `replace_symbol_body` returned "Tool is not active" (2026-10-18). The allowlist's hiding of `activate_project` from the model is unverified; `read_only` is enforced at call time |
+| P6-C3 | MCP registry: [MCP-REGISTRY.md](MCP-REGISTRY.md) | Implemented and verified | Written by the coordinator from `claude mcp list`, `codex -p cardos mcp list` and the Serena tests; checked by the independent review (2026-10-18) |
+| P6-C4 | `.ai/` lifecycle rules: [.ai/LIFECYCLE.md](../../.ai/LIFECYCLE.md) | Implemented and verified | Written by a writer agent; checked by the independent review (2026-10-18) |
+| P6-C5 | ai-memory decision: [ADR 0002](../../.ai/decisions/0002-agent-memory.md), DEFER (Proposed) | Implemented and verified | Facts checked against the ai-memory repo, README, install and data-handling docs and the GitHub API (v3.1.1, MIT, 2026-10-17): default hooks capture prompts and tool calls in every repo, install user-wide, redaction is best-effort; unverified items listed in the ADR |
+| P6-C6 | Independent review, gates, local commit | Implemented and verified | Premium-tier review with a raw MCP client against `serena-agent==2.0.0` on synthetic projects, with a scratch `SERENA_HOME` so the real Serena config was never read: fixed the REPL interface bypassing `read_only` (now `agent_interface: tools`) and the memory tools following symlinks out of the project (now excluded and denied); coordinator follow-ups: a read-only `initial_prompt`, the installed Codex profile synced to the 7-tool allowlist. Gates: hook, `gitleaks git --staged` exit 0, `npm run build` exit 0 |
 
 ### P7: Model routing
 

@@ -12,9 +12,9 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 
 | Field | Value |
 |---|---|
-| Phase | 5: Guardrails, Partially implemented ([status](../docs/ai-engineering/PHASE-STATUS.md#p5-guardrails), [map](../docs/ai-engineering/GUARDRAILS.md)). Phases 2 to 4: Implemented and verified |
-| Chunk | None active. P5-C5 (ruleset) and part of P5-C2 (Codex command rules) wait for the maintainer |
-| Branches / worktree | `ai-os/phase-5` in `../cardos-ai-os`, stacked on `ai-os/phase-4`, `ai-os/phase-3` and `ai-os/phase-2`, based on `main` at `e7598889`. None is merged or pushed. This clone has `core.hooksPath=.githooks` set |
+| Phase | 6: Code intelligence and memory, Implemented and verified ([status](../docs/ai-engineering/PHASE-STATUS.md#p6-code-intelligence-and-memory)). Phase 5: Partially implemented (ruleset and Codex command rules wait for the maintainer). Phases 2 to 4: Implemented and verified |
+| Chunk | None active |
+| Branches / worktree | `ai-os/phase-6` in `../cardos-ai-os`, stacked on `ai-os/phase-5`, `ai-os/phase-4`, `ai-os/phase-3` and `ai-os/phase-2`, based on `main` at `e7598889`. None is merged or pushed. This clone has `core.hooksPath=.githooks` set |
 | Owner | Claude Code coordinator session, until the maintainer merges or closes the branches |
 | Main checkout | `../cardos` on `main`: the maintainer and Codex work there. `main` has moved ahead of the AI-OS base (`git log --oneline e7598889..main`; see known problem 6); none of those commits touch AI-OS files. Don't edit it from these branches |
 | Specification | [`specs/001-gmail-sync/spec.md`](../specs/001-gmail-sync/spec.md): Draft (retroactive), pending the maintainer's acceptance. Constitution [`.specify/memory/constitution.md`](../.specify/memory/constitution.md) v1.0.0: Proposed, pending ratification |
@@ -29,6 +29,8 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
   - [Handoff runbook](runbooks/handoff.md), `AGENTS.md` §2, §6 and §10, `CLAUDE.md`, `INDEX.md`, the roadmap and PHASE-STATUS.
 
 - **Phase 5** (`ai-os/phase-5`): Claude Code deny/ask/allow rules and Bash sandbox (`.claude/settings.json`), a Codex `cardos` profile (`codex -p cardos`; installed in `~/.codex`, example in `docs/ai-engineering/`), the pre-commit hook, CI and Dependabot (run after a push), the `main` ruleset (written, not applied), Opengrep and Conftest (both kept), and [GUARDRAILS.md](../docs/ai-engineering/GUARDRAILS.md).
+
+- **Phase 6** (`ai-os/phase-6`): Serena 2.0.0 pinned and read-only for both agents (`.mcp.json`, `.serena/project.yml`, the Codex `cardos` profile), the [MCP registry](../docs/ai-engineering/MCP-REGISTRY.md), [lifecycle rules](LIFECYCLE.md) and [ADR 0002](decisions/0002-agent-memory.md) (ai-memory: DEFER, Proposed).
 
 ## Checks (details and dates in PHASE-STATUS)
 
@@ -62,9 +64,9 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 
 ## Next steps
 
-1. The maintainer reviews the four stacked branches (merging `ai-os/phase-5` brings in phases 2 to 5).
-2. After a push, let CI run once, then decide on applying `.github/rulesets/main.json` (HIGH; it ends direct commits to `main`).
-3. Decide whether to install `docs/ai-engineering/codex-cardos.rules.example` as `~/.codex/rules/cardos.rules`.
-4. On approval, start Phase 6 (code intelligence and memory).
+1. The maintainer reviews the five stacked branches (merging `ai-os/phase-6` brings in phases 2 to 6). After the merge, Codex's default Serena in CardOS becomes read-only too.
+2. Phase 5 decisions: apply the `main` ruleset after a push and a first CI run; install the Codex command rules or not.
+3. Phase 6 decisions: accept the Serena 2.0.0 pin (5 days old when pinned) or wait until 2026-10-27; pin Serena in the default Codex config; accept ADR 0002.
+4. On approval, start Phase 7 (model routing).
 
-Relevant commit: the latest commit on `ai-os/phase-5` (`git log -1 ai-os/phase-5`).
+Relevant commit: the latest commit on `ai-os/phase-6` (`git log -1 ai-os/phase-6`).

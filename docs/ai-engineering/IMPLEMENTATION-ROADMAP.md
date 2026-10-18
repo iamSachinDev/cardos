@@ -109,7 +109,7 @@ Verdicts are decisions about tools. They are separate from the work statuses in 
 | Hooks | Supported | Supported | Used for guardrails in Phase 5 |
 | Spec Kit commands | `/speckit-*` | `$speckit-*` | Both integrations are multi-install safe (Phase 3) |
 | Spec Kit install side effect | The Claude integration can write `.claude/settings.json` | Not recorded | Install in a worktree and review the diff before committing |
-| Code navigation (Serena) | Not configured yet; added in Phase 6 | Already in use | Supports TS, TSX and Astro |
+| Code navigation (Serena) | `serena-agent==2.0.0` via `.mcp.json`, read-only (Phase 6) | Unpinned in the default config; pinned, read-only and allowlisted in the `cardos` profile (Phase 6) | TypeScript language server; see [MCP-REGISTRY.md](MCP-REGISTRY.md) |
 | Shared MCP servers before Phase 2 | headroom (context compression) | headroom (context compression) | The only server both shared; Phase 6 adds Serena for both and an MCP registry |
 | Model and effort | Premium model at high effort for every task | Premium model at high effort for every task | Routing by task tier arrives in Phase 7 |
 | Project-level config | `.claude/settings.json` | A repo's `.codex/config.toml` is not loaded in an untrusted project (tested in Phase 4); `AGENTS.md` is | Shared rules live in `AGENTS.md`; whether a trusted project loads `.codex/config.toml` is unverified |

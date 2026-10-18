@@ -12,7 +12,7 @@ Guardrails are defense in depth, not a boundary. Command-text rules miss wrapper
 
 | Piece | Where | Active when |
 |---|---|---|
-| Claude Code permissions and sandbox | [`.claude/settings.json`](../../.claude/settings.json): 60 deny, 48 ask, 7 allow rules (dev servers ask, matching `AGENTS.md` §2); Bash sandbox on (Seatbelt), strict (`allowUnsandboxedCommands: false`), `.githooks/` not writable by sandboxed commands | Any Claude Code session started in a checkout that has the file. The 7 allow rules need the workspace-trust prompt accepted once; deny and ask apply regardless |
+| Claude Code permissions and sandbox | [`.claude/settings.json`](../../.claude/settings.json): 84 deny (24 of them for Serena's writing, raw-file and memory tools, Phase 6), 48 ask, 7 allow rules (dev servers ask, matching `AGENTS.md` §2); Bash sandbox on (Seatbelt), strict (`allowUnsandboxedCommands: false`), `.githooks/` not writable by sandboxed commands | Any Claude Code session started in a checkout that has the file. The 7 allow rules need the workspace-trust prompt accepted once; deny and ask apply regardless |
 | Codex profile | [`codex-cardos.config.toml.example`](codex-cardos.config.toml.example), installed as `~/.codex/cardos.config.toml` | Only with `codex -p cardos`; Codex ignores a repo's `.codex/` in an untrusted project (Phase 4) |
 | Codex command rules (proposed) | [`codex-cardos.rules.example`](codex-cardos.rules.example) | Not installed: the only location that always loads is the global `~/.codex/rules/`, the maintainer's call |
 | Pre-commit hook | [`.githooks/pre-commit`](../../.githooks/pre-commit): blocks staged data and secret file types (even force-added) by count, never by name; runs `gitleaks git --staged`; fails closed without gitleaks | After `git config core.hooksPath .githooks` (set in this clone on 2026-10-18), in every checkout whose branch has `.githooks/` |
@@ -54,7 +54,7 @@ Guardrails are defense in depth, not a boundary. Command-text rules miss wrapper
 
 ## Residual risks
 
-- **MCP is a denylist in Claude Code, an allowlist of none in Codex.** Claude Code denies every claude.ai connector and any send, forward, share, upload, reply or publish tool; other local servers keep the default prompt, so Phase 6 can allow Serena. The `cardos` Codex profile turns all MCP servers off. This deviates from the roadmap's "MCP allowlist"; the Phase 6 registry is where an allowlist fits.
+- **MCP is a denylist in Claude Code, an allowlist in Codex.** Claude Code denies every claude.ai connector, any send, forward, share, upload, reply or publish tool and Serena's writing, raw-file and memory tools; other local servers keep the default prompt. The `cardos` Codex profile turns every server off except Serena, limited to 7 navigation tools. The allowed servers are listed in [MCP-REGISTRY.md](MCP-REGISTRY.md) (Phase 6).
 - Prompted commands that run outside the sandbox (`git push`, `npm ci`, `npm run cardos`, `npm run ai:worktree`) execute repo code that sandboxed commands can change; read what changed before approving.
 
 - `allowLocalBinding` lets sandboxed commands reach any localhost port, Burnrate's included; only the obvious `curl` forms are denied.

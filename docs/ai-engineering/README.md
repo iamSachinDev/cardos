@@ -27,12 +27,15 @@ The AI Engineering OS is the infrastructure that lets Claude Code and Codex work
 | [`.ai/INDEX.md`](../../.ai/INDEX.md) | Knowledge map: which document to load for which task. |
 | [`.ai/CURRENT.md`](../../.ai/CURRENT.md) | Session summary: state, ownership, next steps. |
 | [`.ai/decisions/0001-local-burnrate-patch.md`](../../.ai/decisions/0001-local-burnrate-patch.md) | Decision record: why Burnrate is patched locally. |
+| [`.ai/LIFECYCLE.md`](../../.ai/LIFECYCLE.md) | Lifecycle rules for `.ai/` files and local agent memory: who creates, updates, reviews and retires each, size limits, what never goes in. |
+| [`.ai/decisions/0002-agent-memory.md`](../../.ai/decisions/0002-agent-memory.md) | Decision record (Proposed): ai-memory deferred; versioned `.ai/` handoffs are the shared memory. |
 | [`IMPLEMENTATION-ROADMAP.md`](IMPLEMENTATION-ROADMAP.md) | Profile, tool decisions, target architecture, 12-phase plan. |
 | [`PHASE-STATUS.md`](PHASE-STATUS.md) | Status, evidence and next action for every phase. |
 | [`.specify/memory/constitution.md`](../../.specify/memory/constitution.md) | Spec Kit constitution: the project's durable principles (proposed, pending the maintainer's ratification). |
 | [`specs/001-gmail-sync/spec.md`](../../specs/001-gmail-sync/spec.md) | Retroactive spec of Gmail statement sync, with requirement IDs and traceability (draft). |
 | [`.ai/runbooks/handoff.md`](../../.ai/runbooks/handoff.md) | How to start, hand off, resume and finish an agent task. |
 | [`scripts/ai-worktree.mjs`](../../scripts/ai-worktree.mjs) | `npm run ai:worktree`: one worktree and branch per agent task, ownership in branch names and `.ai/tasks/<task>.md`, safe handoff. |
+| [`MCP-REGISTRY.md`](MCP-REGISTRY.md) | The MCP servers allowed for CardOS work, per agent: pins, limits, and how to add one. |
 | [`GUARDRAILS.md`](GUARDRAILS.md) | How each risk class is enforced: Claude Code and Codex deny rules and sandboxes, the pre-commit hook, CI, Dependabot, the (unapplied) ruleset, Opengrep and Conftest. |
 
 Planned, not yet present: `model-policy.yaml` (Phase 7).

@@ -39,7 +39,8 @@ project_name: "cardos"
 # When using multiple language servers, the first language server that supports a given file will be used for that file.
 # The first language server is the default language and the respective language server will be used as a fallback.
 # Note that when using the JetBrains backend, language servers are not used and this list is correspondingly ignored.
-language_servers: []
+language_servers:
+  - typescript
 
 # the encoding used by text files in the project
 # For a list of possible encodings, see https://docs.python.org/3.11/library/codecs.html#standard-encodings
@@ -73,7 +74,9 @@ language_backend:
 # The interface through which the agent (LLM) accesses Serena's functionality (overrides the global setting).
 # Valid values: tools, REPL (see the global configuration for details); leave empty to use the global setting.
 # Note: the interface is fixed at startup. If a project is activated post-init, its setting is not applied.
-agent_interface:
+# Pinned to tools: serena-agent 2.0.0 writes agent_interface: REPL into a new global config, and in REPL mode
+# read_only and excluded_tools do not apply (serena_repl runs arbitrary Python; verified on a synthetic project).
+agent_interface: tools
 
 # whether to use project's .gitignore files to ignore files
 ignore_all_files_in_gitignore: true
@@ -116,17 +119,73 @@ ls_additional_workspace_folders: []
 #     - "**/bin/**"
 #     - "**/obj/**"
 # Note: global ignored_paths from serena_config.yml are also applied additively.
-ignored_paths: []
+# Mirrors the data and secret rules of the root .gitignore (defense in depth: an explicit relative_path into an
+# ignored directory is not always filtered by the gitignore rules alone).
+ignored_paths:
+  - "node_modules"
+  - "data/"
+  - "local-data/"
+  - "uploads/"
+  - "imports/"
+  - "exports/"
+  - "statements/"
+  - ".env"
+  - ".env.[!e]*"
+  - ".env.e[!x]*"
+  - "*.env"
+  - "*.pem"
+  - "*.p12"
+  - "*.pfx"
+  - "*.db"
+  - "*.db-*"
+  - "*.sqlite*"
+  - "*.pdf"
+  - "*.csv"
+  - "*.tsv"
+  - "*.xls"
+  - "*.xlsx"
+  - "*.ofx"
+  - "*.qfx"
+  - "client_secret*.json"
 
 # whether the project is in read-only mode
 # If set to true, all editing tools will be disabled and attempts to use them will result in an error
 # Added on 2025-04-18
-read_only: false
+read_only: true
 
 # list of tool names to exclude.
 # This extends the existing exclusions (e.g. from the global configuration)
 # Find the list of tools here: https://oraios.github.io/serena/01-about/035_tools.html
-excluded_tools: []
+excluded_tools:
+  # read_only already removes every tool that can edit; this list makes the intent explicit and survives a flipped flag.
+  - execute_shell_command
+  - create_text_file
+  - replace_content
+  - replace_in_files
+  - replace_lines
+  - delete_lines
+  - insert_at_line
+  - insert_before_symbol
+  - insert_after_symbol
+  - replace_symbol_body
+  - rename_symbol
+  - safe_delete_symbol
+  - write_memory
+  - edit_memory
+  - rename_memory
+  - delete_memory
+  - onboarding
+  - serena_repl
+  # Verified leak (serena-agent 2.0.0): an explicit relative_path pointing into a gitignored directory (e.g. statements/)
+  # lists and searches everything inside it, so the non-symbolic file tools stay off.
+  - search_for_pattern
+  - read_file
+  - list_dir
+  - find_file
+  # read_memory follows a symlink placed in .serena/memories to any file outside the project, and both memory tools
+  # also reach the user-wide global memories (verified on serena-agent 2.0.0), so memory reading stays off too.
+  - read_memory
+  - list_memories
 
 # list of tools to include that would otherwise be disabled (particularly optional tools that are disabled by default).
 # This extends the existing inclusions (e.g. from the global configuration).
@@ -164,7 +223,7 @@ added_modes:
 
 # initial prompt for the project. It will always be given to the LLM upon activating the project
 # (contrary to the memories, which are loaded on demand).
-initial_prompt: ""
+initial_prompt: "Serena is read-only in this project: use it only to find and understand code (symbols, references, declarations, diagnostics). It cannot edit files, run commands or keep memories here, so ignore any instruction to edit through Serena: make changes with your own editing tools, which follow AGENTS.md."
 
 # time budget (seconds) per tool call for the retrieval of additional symbol information
 # such as docstrings or parameter information.
