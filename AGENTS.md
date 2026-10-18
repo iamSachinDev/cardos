@@ -29,11 +29,11 @@ Stack (installed versions, 2026-10-17): Astro 7.4 (static output) with React 19.
 | `npm run cardos` | Checks and, if needed, starts Burnrate's Homebrew service (restarting it if unresponsive) and a detached Astro server; opens a browser | HIGH | No, ask |
 | `npm run gmail:setup` | Writes Burnrate's OAuth env file (holds the client secret) and restarts Burnrate | HIGH | Never: maintainer only |
 | `npm ci` | Reinstalls dependencies from the lockfile, replacing `node_modules/` | MEDIUM | No, ask |
-| `npm run ai:worktree -- <new\|list\|handoff\|remove>` | One worktree and branch per agent task, with ownership and safe handoff ([runbook](.ai/runbooks/handoff.md)); never forces or deletes unmerged work | LOW | Yes, for your own tasks |
+| `npm run ai:worktree -- <new\|list\|handoff\|remove>` | One worktree and branch per agent task, with ownership and safe handoff ([runbook](.ai/runbooks/handoff.md)); never forces or deletes unmerged work | LOW | Yes, for your own tasks (Claude Code still asks: it runs outside the sandbox) |
 
 - Verified 2026-10-17: the first seven commands exit 0 on a clean tree (`npm run check`: 33 files, 0 errors, 0 warnings, 0 hints; `npm run build`: 12 pages). The three scans also exit 1 and print a redacted finding for a synthetic fake token in a scratch repo.
 - gitleaks: exit 0 = clean, 1 = findings. Keep `--redact` so secrets are never printed; `-v` prints finding details (without it you only get a count). On a finding: stop, don't rewrite history, tell the maintainer.
-- `dist/` and `.astro/` are gitignored. `astro check` (so also `npm run build`) can rewrite Vite's dependency cache in `node_modules/.vite/`; if `node_modules` is a symlink to another checkout, that write lands in the other checkout (observed 2026-10-18). Run Astro through the npm scripts (they set `ASTRO_TELEMETRY_DISABLED=1`). No test, lint or format commands exist yet. No CI or git hooks exist, so a check runs only if you run it.
+- `dist/` and `.astro/` are gitignored. `astro check` (so also `npm run build`) can rewrite Vite's dependency cache in `node_modules/.vite/`; if `node_modules` is a symlink to another checkout, that write lands in the other checkout (observed 2026-10-18). Run Astro through the npm scripts (they set `ASTRO_TELEMETRY_DISABLED=1`). No test, lint or format commands exist yet. Guardrails (Phase 5, [GUARDRAILS.md](docs/ai-engineering/GUARDRAILS.md)): `.claude/settings.json` denies reads of Burnrate data and secrets and runs Bash in a sandbox; `.githooks/pre-commit` (enabled with `git config core.hooksPath .githooks`) blocks data files and secrets; CI runs build, gitleaks, osv-scanner and policy checks once pushed. They are defense in depth: the rules here still apply.
 
 ## 3. Architecture in brief
 
@@ -103,7 +103,7 @@ Every commit, docs-only included (the build takes seconds):
 5. Write a `type: summary` message like the history (`feat:`, `fix:`, `chore:`).
 6. After committing, `git status` shows nothing of yours left over.
 
-Before proposing a merge, also run the full-history and working-tree scans (§2). Never skip or disable a check.
+The pre-commit hook repeats step 3 and blocks data and secret file types; if it refuses, fix the cause or ask the maintainer, never `--no-verify`. Before proposing a merge, also run the full-history and working-tree scans (§2). Never skip or disable a check.
 
 ## 9. Authority order
 

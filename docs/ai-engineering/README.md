@@ -33,6 +33,7 @@ The AI Engineering OS is the infrastructure that lets Claude Code and Codex work
 | [`specs/001-gmail-sync/spec.md`](../../specs/001-gmail-sync/spec.md) | Retroactive spec of Gmail statement sync, with requirement IDs and traceability (draft). |
 | [`.ai/runbooks/handoff.md`](../../.ai/runbooks/handoff.md) | How to start, hand off, resume and finish an agent task. |
 | [`scripts/ai-worktree.mjs`](../../scripts/ai-worktree.mjs) | `npm run ai:worktree`: one worktree and branch per agent task, ownership in branch names and `.ai/tasks/<task>.md`, safe handoff. |
+| [`GUARDRAILS.md`](GUARDRAILS.md) | How each risk class is enforced: Claude Code and Codex deny rules and sandboxes, the pre-commit hook, CI, Dependabot, the (unapplied) ruleset, Opengrep and Conftest. |
 
 Planned, not yet present: `model-policy.yaml` (Phase 7).
 
@@ -42,7 +43,7 @@ Planned, not yet present: `model-policy.yaml` (Phase 7).
 - **HIGH** and **CRITICAL**: the maintainer's explicit approval is needed first.
 - Agents never self-approve.
 
-MEDIUM work needs a plan first and the maintainer's approval before merge. The class table is in [`AGENTS.md` §7](../../AGENTS.md#7-risk-classes-and-approvals), and the local Burnrate patch is HIGH ([decision record](../../.ai/decisions/0001-local-burnrate-patch.md)). Phase 5 adds deny rules and hooks as defense in depth; they are not a sandbox.
+MEDIUM work needs a plan first and the maintainer's approval before merge. The class table is in [`AGENTS.md` §7](../../AGENTS.md#7-risk-classes-and-approvals), and the local Burnrate patch is HIGH ([decision record](../../.ai/decisions/0001-local-burnrate-patch.md)). Phase 5 added deny rules, sandboxes, a pre-commit hook and CI as defense in depth ([GUARDRAILS.md](GUARDRAILS.md)).
 
 The repo is public: never put real financial or personal data in docs, fixtures, evals or memory.
 

@@ -1,0 +1,1 @@
+{"permissions":{"deny":["Read(~/Library/Application Support/Burnrate/**)","Read(**/.env)","Read(**/*.PDF)","Read(**/*.csv)","Read(**/*.sqlite3)","Read(**/*.db)"]}}

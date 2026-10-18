@@ -1,0 +1,11 @@
+name: ci
+on: [push]
+permissions: {}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0e3b1b3b3a8b1f1b0a5e5a6e4f2d3c9b8a7f61
+      - uses: actions/checkout@de0e3b1b3b3a8b1f1b0a5e5a6e4f2d3c9b8a7f61
+        with:
+          persist-credentials: true

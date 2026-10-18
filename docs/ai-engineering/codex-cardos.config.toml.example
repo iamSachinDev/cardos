@@ -1,0 +1,89 @@
+# EXAMPLE, for maintainer review. Copy to $CODEX_HOME/cardos.config.toml (usually ~/.codex/cardos.config.toml).
+# CardOS guardrail profile for Codex CLI 0.159.2.
+# Use it with:  codex -p cardos      (layers $CODEX_HOME/cardos.config.toml over config.toml)
+# The default Codex setup (config.toml, rules/) is not changed by this file.
+# Source of the checks: AGENTS.md section 5 (data protection) and section 7 (risk classes).
+#
+# What this profile ENFORCES (verified with `codex sandbox -p cardos -P cardos`):
+#   - OS-level (Seatbelt) read denial for Burnrate data and secrets: shell commands cannot read them.
+#   - Sandbox write limits (workspace only) and no network, plus approval on request.
+#   - Fewer outbound or screen-reading capabilities: web search off, browser and computer-use plugins off,
+#     MCP servers off, secret-looking environment variables not passed to commands.
+# What it does NOT enforce: command-level bans (force push, history rewrite, `git add -f`,
+#   `npm run gmail:setup`). Codex has them only as execpolicy `.rules` files (prefix matching only),
+#   which this file cannot install. Approval policy decides the rest.
+
+# Use named permission profiles, not the legacy sandbox_mode (the two do not combine; do not pass -s).
+default_permissions = "cardos"
+approval_policy = "on-request"
+approvals_reviewer = "user"
+web_search = "disabled"
+allow_login_shell = false
+
+[permissions.cardos]
+description = "CardOS: workspace writes only, no network, Burnrate data and secrets unreadable."
+extends = ":workspace"
+
+[permissions.cardos.filesystem]
+# Deny wins over read and write. Paths are absolute or ~/ ; globs are matched by Seatbelt on macOS.
+# Burnrate (Homebrew): data dir (database, encryption key, tokens), logs, and the env file with the OAuth client secret.
+"/opt/homebrew/var/burnrate" = "deny"
+"/opt/homebrew/var/**/burnrate*" = "deny"
+"/opt/homebrew/opt/burnrate/libexec/.env.production" = "deny"
+"/opt/homebrew/Cellar/burnrate/**/.env*" = "deny"
+# Any env file, anywhere (mirrors the .gitignore rules), except the tracked .env.example (denying it makes
+# `git status` and gitleaks report errors). The bracket globs match .env and every .env.<name> not starting "ex".
+"/**/.env" = "deny"
+"/**/.env.[!e]*" = "deny"
+"/**/.env.e[!x]*" = "deny"
+"/**/*.env" = "deny"
+# Statements and exports, anywhere (the Burnrate watch folder location is set in its settings and is unknown here).
+"/**/*.pdf" = "deny"
+"/**/*.csv" = "deny"
+"/**/*.tsv" = "deny"
+"/**/*.xls*" = "deny"
+"/**/*.ofx" = "deny"
+"/**/*.qfx" = "deny"
+# Databases (Burnrate uses SQLite).
+"/**/*.db" = "deny"
+"/**/*.db-*" = "deny"
+"/**/*.sqlite*" = "deny"
+# Downloaded Google OAuth client JSON.
+"/**/client_secret*.json" = "deny"
+# Agent credentials.
+"~/.codex/auth.json" = "deny"
+"~/.claude/.credentials.json" = "deny"
+
+[permissions.cardos.network]
+# No outbound access from sandboxed commands. `npm ci`, `git push` and `gh` will ask for approval to run outside it.
+enabled = false
+
+# No MCP servers in this profile: none is needed for CardOS work. Serena (Phase 6) will be enabled explicitly.
+# One block per server defined in your own config.toml (these three are examples; list yours).
+[mcp_servers.headroom]
+enabled = false
+[mcp_servers.serena]
+enabled = false
+[mcp_servers.node_repl]
+enabled = false
+
+# Plugin ids depend on what you installed (see [plugins.*] in your config.toml); adjust.
+# Plugins that can read the screen, drive a browser (the CardOS UI shows real financial data) or open PDFs and spreadsheets.
+[plugins."browser@openai-bundled"]
+enabled = false
+[plugins."chrome@openai-bundled"]
+enabled = false
+[plugins."computer-use@openai-bundled"]
+enabled = false
+[plugins."unified-computer-use@openai-bundled"]
+enabled = false
+[plugins."pdf@openai-primary-runtime"]
+enabled = false
+[plugins."spreadsheets@openai-primary-runtime"]
+enabled = false
+
+# Do not pass secret-looking variables (KEY, SECRET, TOKEN, PASSWORD) to commands.
+[shell_environment_policy]
+inherit = "all"
+ignore_default_excludes = false
+exclude = ["*KEY*", "*SECRET*", "*TOKEN*", "*PASSWORD*", "BURNRATE_*"]

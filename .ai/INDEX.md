@@ -20,6 +20,7 @@ Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **C
 | `.ai/tasks/<task>.md` | One agent task's owner, state, next step and history; lives on the task's branch, written by `npm run ai:worktree` | WARM (your task's file only) | task owner | — |
 | [`docs/ai-engineering/README.md`](../docs/ai-engineering/README.md) | Overview of the AI-engineering setup | WARM | maintainer | — |
 | [`docs/ai-engineering/IMPLEMENTATION-ROADMAP.md`](../docs/ai-engineering/IMPLEMENTATION-ROADMAP.md) | Phased plan for the setup | WARM | maintainer | — |
+| [`docs/ai-engineering/GUARDRAILS.md`](../docs/ai-engineering/GUARDRAILS.md) | How each risk class is enforced: deny rules, sandboxes, hook, CI, policies | WARM | maintainer | 2026-10-18 |
 | [`docs/ai-engineering/PHASE-STATUS.md`](../docs/ai-engineering/PHASE-STATUS.md) | Status of each phase | WARM | maintainer | — |
 | [`README.md`](../README.md) | User docs: run, data, Gmail setup, Burnrate patch | WARM | maintainer | 2026-10-18 (partial) |
 | [`patches/burnrate-0.5.2.patch`](../patches/burnrate-0.5.2.patch) | Local fixes to Burnrate 0.5.2 (840 lines) | WARM | maintainer | 2026-10-18 |

@@ -1,0 +1,89 @@
+# CardOS conventions as Opengrep rules (AGENTS.md §4 and §5). Runs offline; same command as CI job `policy`
+# (--severity ERROR skips the WARNING rule; drop it to see those findings):
+#   opengrep scan --config .opengrep/rules.yml --disable-version-check --error --severity ERROR src scripts
+rules:
+  - id: cardos-no-network-outside-lib
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      Components, pages and layouts must not make network calls; use useLiveData/useLiveQuery (reads) and
+      apiMutate (writes). Raw fetch stays in src/lib/ (AGENTS.md §4 Data access).
+    paths:
+      include: [src/]
+      exclude: [src/lib/]
+    pattern-either:
+      - pattern: fetch(...)
+      - pattern: window.fetch(...)
+      - pattern: globalThis.fetch(...)
+      - pattern: new XMLHttpRequest(...)
+      - pattern: navigator.sendBeacon(...)
+      - pattern: new WebSocket(...)
+      - pattern: new EventSource(...)
+
+  - id: cardos-no-external-url
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      External absolute URL in src/. Only relative /api/* calls are allowed, plus Google's sign-in origin in
+      src/lib/gmail.ts; no analytics, telemetry, CDN assets or other external requests without maintainer
+      approval (AGENTS.md §4 Network). Loopback (127.0.0.1, localhost) is allowed.
+    paths:
+      include: [src/]
+    pattern-regex: '(?i)(https?:)?//(?!127\.0\.0\.1|localhost|accounts\.google\.com)[a-z0-9-]+(\.[a-z0-9-]+)+(?::\d+)?/?'
+    # Known false-positive shape: SVG xmlns (http://www.w3.org/2000/svg) and prose comments; none exist today.
+
+  - id: cardos-google-origin-only-in-gmail
+    languages: [generic]
+    severity: ERROR
+    message: Google's sign-in origin may appear only in src/lib/gmail.ts, where it is origin-checked (AGENTS.md §4 Network).
+    paths:
+      include: [src/]
+      exclude: [src/lib/gmail.ts]
+    pattern-regex: 'accounts\.google\.com'
+
+  - id: cardos-no-dangerous-html
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      Raw HTML injection (dangerouslySetInnerHTML, innerHTML, Astro set:html). Burnrate text (merchant names,
+      statement fields) is untrusted; render it as text.
+    paths:
+      include: [src/]
+    pattern-regex: 'dangerouslySetInnerHTML|\.(inner|outer)HTML\s*=|\bset:html\b|insertAdjacentHTML'
+
+  - id: cardos-browser-storage-theme-only
+    languages: [generic]
+    severity: ERROR
+    message: >-
+      The browser may persist only the theme (localStorage key 'cardos-theme'); financial data stays in memory
+      (AGENTS.md §3, §5). No other localStorage key, no sessionStorage, IndexedDB or cookies.
+    paths:
+      include: [src/]
+    pattern-regex: '(?x) localStorage\.\w+\(\s*(?![''"]cardos-theme[''"]) | \bsessionStorage\b | \bindexedDB\b | document\.cookie'
+
+  - id: cardos-no-any-or-ts-ignore
+    languages: [generic]
+    severity: WARNING
+    message: Avoid `any` and @ts-ignore/@ts-nocheck (AGENTS.md §4 TypeScript); narrow with a type or `unknown`.
+    paths:
+      include: [src/]
+      exclude: ['*.css']
+    pattern-regex: '@ts-(ignore|nocheck)|\bas\s+any\b|:\s*any\b(?!\w)|<any>|\bany\[\]'
+
+  - id: cardos-scripts-no-shell-string
+    languages: [javascript]
+    severity: ERROR
+    message: >-
+      Do not run shell strings from scripts/. Use spawn/spawnSync/execFile with an argument array and no
+      `shell: true` (AGENTS.md §4).
+    paths:
+      include: [scripts/]
+    pattern-either:
+      - pattern: exec(...)
+      - pattern: execSync(...)
+      - pattern: child_process.exec(...)
+      - pattern: child_process.execSync(...)
+      - pattern: cp.exec(...)
+      - pattern: cp.execSync(...)
+      - pattern: '$FN($CMD, $ARGS, {..., shell: true, ...})'
+      - pattern: '$FN($CMD, {..., shell: true, ...})'

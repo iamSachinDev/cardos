@@ -12,9 +12,9 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 
 | Field | Value |
 |---|---|
-| Phase | 4: Orchestration, Implemented and verified ([status](../docs/ai-engineering/PHASE-STATUS.md#p4-orchestration)). Phase 5 not started: needs the maintainer's approval |
-| Chunk | None active. The Claude-to-Codex handoff demo passed; its record is `.ai/tasks/p4-handoff-demo.md` |
-| Branches / worktree | `ai-os/phase-4` in `../cardos-ai-os`, stacked on `ai-os/phase-3` (`9b15113b`), then `ai-os/phase-2` (`16e95c5a`), then `main` at `e7598889`. None is merged or pushed |
+| Phase | 5: Guardrails, Partially implemented ([status](../docs/ai-engineering/PHASE-STATUS.md#p5-guardrails), [map](../docs/ai-engineering/GUARDRAILS.md)). Phases 2 to 4: Implemented and verified |
+| Chunk | None active. P5-C5 (ruleset) and part of P5-C2 (Codex command rules) wait for the maintainer |
+| Branches / worktree | `ai-os/phase-5` in `../cardos-ai-os`, stacked on `ai-os/phase-4`, `ai-os/phase-3` and `ai-os/phase-2`, based on `main` at `e7598889`. None is merged or pushed. This clone has `core.hooksPath=.githooks` set |
 | Owner | Claude Code coordinator session, until the maintainer merges or closes the branches |
 | Main checkout | `../cardos` on `main`: the maintainer and Codex work there. `main` has moved ahead of the AI-OS base (`git log --oneline e7598889..main`; see known problem 6); none of those commits touch AI-OS files. Don't edit it from these branches |
 | Specification | [`specs/001-gmail-sync/spec.md`](../specs/001-gmail-sync/spec.md): Draft (retroactive), pending the maintainer's acceptance. Constitution [`.specify/memory/constitution.md`](../.specify/memory/constitution.md) v1.0.0: Proposed, pending ratification |
@@ -27,6 +27,8 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
   - Codex ignores a repo's `.codex/config.toml` in an untrusted project; `AGENTS.md` is the only shared channel (P4-C1).
   - `scripts/ai-worktree.mjs` (`npm run ai:worktree`): `new`, `list`, `handoff` and `remove`. Branch `ai/<agent>/<task>`, worktree `../cardos-wt/<agent>-<task>`, provenance in git config, a per-task state file `.ai/tasks/<task>.md`.
   - [Handoff runbook](runbooks/handoff.md), `AGENTS.md` §2, §6 and §10, `CLAUDE.md`, `INDEX.md`, the roadmap and PHASE-STATUS.
+
+- **Phase 5** (`ai-os/phase-5`): Claude Code deny/ask/allow rules and Bash sandbox (`.claude/settings.json`), a Codex `cardos` profile (`codex -p cardos`; installed in `~/.codex`, example in `docs/ai-engineering/`), the pre-commit hook, CI and Dependabot (run after a push), the `main` ruleset (written, not applied), Opengrep and Conftest (both kept), and [GUARDRAILS.md](../docs/ai-engineering/GUARDRAILS.md).
 
 ## Checks (details and dates in PHASE-STATUS)
 
@@ -45,7 +47,7 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 1. **Root `README.md`:** it still omits `patches/burnrate-password-reparse-preserve.patch`, says "Node.js 20+" (the locked Astro needs >= 22.22.0) and claims XLS import (spec G-4). On `main` it now documents the one-year and personal-fee patches.
 2. **Skipped files may show as failed imports.** The Burnrate patch logs skipped non-card and ignored files with status "error", so the Statements page may list them as "Parse failed" after each Burnrate restart (spec G-17). Changing patches is HIGH.
 3. **Card hints in public files:** Burnrate patch comments include a real card-issuer prefix in an example filename and hint at a card product (public since `89af6c1c`); ADR 0001's Context hints at which issuers are in use.
-4. **`.gitignore` gaps:** no patterns for a downloaded Google OAuth client JSON or for local agent settings (Phase 5).
+4. **`.gitignore` gaps:** no patterns for a downloaded Google OAuth client JSON or for local agent settings. Phase 5's hook and Claude deny rules now block the client JSON; the `.gitignore` lines themselves are the maintainer's call.
 5. **Possible UI bug:** `src/styles/optimize.css` uses colour variables that no stylesheet defines.
 6. **AI-OS docs are behind `main`.** After the AI-OS base, Codex committed `patches/burnrate-gmail-one-year.patch` (365 days, every result page) and `patches/burnrate-card-personal-fees.patch` on `main`. Spec 001 is baselined at `e7598889` and describes 120 days and a 200-message cap: FR-005, FR-034, SC-009, user story 1's fourth acceptance scenario, the "more than 200" edge case, the "both patches" assumption and G-14. Revise these after the branches are merged with `main`, together with ADR 0001, `.ai/CONTEXT.md` and `INDEX.md`.
 7. **`.serena/` tracking:** `.serena/` is gitignored, but two of its files are tracked (Phase 6).
@@ -60,7 +62,9 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 
 ## Next steps
 
-1. The maintainer reviews the three stacked branches and decides on the items above.
-2. On approval, start Phase 5 (guardrails) in its own worktree with `npm run ai:worktree`.
+1. The maintainer reviews the four stacked branches (merging `ai-os/phase-5` brings in phases 2 to 5).
+2. After a push, let CI run once, then decide on applying `.github/rulesets/main.json` (HIGH; it ends direct commits to `main`).
+3. Decide whether to install `docs/ai-engineering/codex-cardos.rules.example` as `~/.codex/rules/cardos.rules`.
+4. On approval, start Phase 6 (code intelligence and memory).
 
-Relevant commit: the latest commit on `ai-os/phase-4` (`git log -1 ai-os/phase-4`).
+Relevant commit: the latest commit on `ai-os/phase-5` (`git log -1 ai-os/phase-5`).

@@ -1,0 +1,29 @@
+# CardOS execpolicy rules for Codex (proposed: <repo>/.codex/rules/cardos.rules).
+# Codex rules merge across files and the most restrictive decision wins, so these override any user-level "allow".
+# Source: AGENTS.md section 7. A rule matches a command prefix as run by Codex; it is not a security boundary
+# (wrappers such as `sh -c`, or `git -C . push`, are different prefixes, and a flag placed after other arguments, as in
+# `git push origin x --force`, is not part of the prefix: the push prompt below is the backstop). The filesystem profile covers data reads.
+
+# CRITICAL: exposing secrets, deleting data, force-pushing, rewriting history, bypassing ignore rules.
+prefix_rule(pattern=["npm", "run", "gmail:setup"], decision="forbidden", justification="Maintainer only (AGENTS.md section 2): writes Burnrate's OAuth env file.", match=["npm run gmail:setup"])
+prefix_rule(pattern=["node", "scripts/configure-gmail.mjs"], decision="forbidden", justification="Maintainer only: same as npm run gmail:setup.", match=["node scripts/configure-gmail.mjs"])
+prefix_rule(pattern=["sqlite3"], decision="forbidden", justification="Would read Burnrate's database.", match=["sqlite3 x.db .tables"])
+prefix_rule(pattern=["git", "push", ["--force", "-f", "--force-with-lease", "--force-if-includes", "--mirror", "--delete", "-d"]], decision="forbidden", justification="Force push or ref deletion is CRITICAL.", match=["git push --force", "git push -f origin x"])
+prefix_rule(pattern=["git", "push", "origin", ["main", "master"]], decision="forbidden", justification="Pushing main is CRITICAL.", match=["git push origin main"])
+prefix_rule(pattern=["git", "push", "-u", "origin", ["main", "master"]], decision="forbidden", justification="Pushing main is CRITICAL.", match=["git push -u origin main"])
+prefix_rule(pattern=["git", "add", ["-f", "--force", "-A", "--all", "."]], decision="forbidden", justification="Never force-add ignored files; stage explicit paths only (AGENTS.md sections 5, 6).", match=["git add -f .env", "git add -A", "git add ."])
+prefix_rule(pattern=["git", "commit", ["-a", "-am", "--all", "--amend"]], decision="forbidden", justification="Stage explicit paths; never amend or sweep in others' edits.", match=["git commit -am x", "git commit --amend"])
+prefix_rule(pattern=["git", ["rebase", "filter-branch", "filter-repo", "update-ref"]], decision="forbidden", justification="History rewrite is CRITICAL.", match=["git rebase main", "git filter-branch"])
+prefix_rule(pattern=["git", "reset", "--hard"], decision="forbidden", justification="Discards changes, possibly not yours (AGENTS.md section 6).", match=["git reset --hard HEAD"])
+prefix_rule(pattern=["git", "reflog", ["expire", "delete"]], decision="forbidden", justification="History rewrite.", match=["git reflog expire --all"])
+
+# HIGH: publish or touch Burnrate. Always ask.
+prefix_rule(pattern=["git", "push"], decision="prompt", justification="Publishes to a public repo (AGENTS.md section 7).", match=["git push", "git push origin ai/codex/x"])
+prefix_rule(pattern=["gh", ["pr", "issue", "release"], ["create", "comment", "edit", "merge", "review", "close"]], decision="prompt", justification="Publishes to the public repo.", match=["gh pr create --fill", "gh issue comment 1"])
+prefix_rule(pattern=["gh", "release"], decision="prompt", justification="Publishes to the public repo.", match=["gh release create v1"])
+prefix_rule(pattern=["gh", "api"], decision="prompt", justification="Can write to the public repo.", match=["gh api repos/x/y"])
+prefix_rule(pattern=["npm", "run", "cardos"], decision="prompt", justification="Starts or restarts Burnrate's service and opens a browser.", match=["npm run cardos"])
+prefix_rule(pattern=["brew", "services"], decision="prompt", justification="Changes Burnrate's service.", match=["brew services restart burnrate"])
+prefix_rule(pattern=["npm", ["ci", "install", "i", "update", "uninstall"]], decision="prompt", justification="Changes dependencies (MEDIUM).", match=["npm ci", "npm install x"])
+prefix_rule(pattern=["patch"], decision="prompt", justification="patches/ apply to the Homebrew Burnrate install (HIGH, ADR 0001).", match=["patch -p0 -d x"])
+prefix_rule(pattern=["git", ["stash", "clean", "reset", "restore"]], decision="prompt", justification="Can discard changes that are not yours.", match=["git stash", "git clean -fd", "git reset HEAD x"])

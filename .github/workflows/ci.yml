@@ -1,0 +1,138 @@
+# CardOS CI (Phase 5 guardrails). Four independent checks on every pull request
+# and on pushes to main: build (includes astro check), gitleaks over the full
+# history, osv-scanner on package-lock.json, and policy (Opengrep, Conftest).
+#
+# - Read-only token, no secrets, no deploy, no artifact upload.
+# - Third-party actions are pinned to a full commit SHA (version in the comment);
+#   Dependabot keeps them current. The scanners are pinned release binaries
+#   whose SHA-256 is checked before they run.
+# - Job names (build, gitleaks, osv-scanner, policy) are the status-check names that
+#   .github/rulesets/main.json requires. Renaming a job means updating it too.
+# - Logs of a public repo are public: gitleaks runs without -v so a finding is
+#   reported as a count only. Re-run locally with -v to see details (AGENTS.md).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  ASTRO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Astro 7 needs Node >=22.22.0 (engines in package-lock.json); 24 is an LTS line.
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # `npm run build` runs `astro check` first, then `astro build`.
+      - run: npm run build
+
+  gitleaks:
+    name: gitleaks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GITLEAKS_VERSION: "8.30.1"
+      # SHA-256 of gitleaks_8.30.1_linux_x64.tar.gz (matches the digest GitHub
+      # reports for the release asset). Update both lines together.
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # full history: a secret removed in a later commit is still leaked
+          persist-credentials: false
+      - name: Install gitleaks (checksum verified)
+        run: |
+          set -euo pipefail
+          curl -sSfL --retry 3 -o "$RUNNER_TEMP/gitleaks.tar.gz" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  $RUNNER_TEMP/gitleaks.tar.gz" | sha256sum -c -
+          mkdir "$RUNNER_TEMP/gitleaks-bin"
+          tar -xzf "$RUNNER_TEMP/gitleaks.tar.gz" -C "$RUNNER_TEMP/gitleaks-bin" gitleaks
+          echo "$RUNNER_TEMP/gitleaks-bin" >> "$GITHUB_PATH"
+      - name: Scan full history
+        run: gitleaks git --redact --no-banner .
+
+  osv-scanner:
+    name: osv-scanner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      OSV_SCANNER_VERSION: "2.7.0"
+      # SHA-256 of osv-scanner_linux_amd64 for v2.7.0 (matches the digest GitHub
+      # reports for the release asset). Update both lines together.
+      OSV_SCANNER_SHA256: 160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install osv-scanner (checksum verified)
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/osv-bin"
+          curl -sSfL --retry 3 -o "$RUNNER_TEMP/osv-bin/osv-scanner" \
+            "https://github.com/google/osv-scanner/releases/download/v${OSV_SCANNER_VERSION}/osv-scanner_linux_amd64"
+          echo "${OSV_SCANNER_SHA256}  $RUNNER_TEMP/osv-bin/osv-scanner" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/osv-bin/osv-scanner"
+          echo "$RUNNER_TEMP/osv-bin" >> "$GITHUB_PATH"
+      # Exits non-zero if any locked package has a known vulnerability.
+      - name: Scan package-lock.json
+        run: osv-scanner scan source --lockfile package-lock.json
+
+  # Phase 5 pilots, both kept: Opengrep enforces the AGENTS.md §4 conventions
+  # (.opengrep/rules.yml) and Conftest checks the guardrail configs (policy/).
+  policy:
+    name: policy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      OPENGREP_VERSION: "v1.31.0"
+      # SHA-256 of opengrep_manylinux_x86 (digest GitHub reports for the asset).
+      OPENGREP_SHA256: dbbe3c2058dbe600c449a8ba22ea79a1643a6660658400090d0323a8d0d31147
+      CONFTEST_VERSION: "0.71.1"
+      # SHA-256 of conftest_0.71.1_Linux_x86_64.tar.gz (digest GitHub reports).
+      CONFTEST_SHA256: c3f6b2a753bd56e377a1e51a95ae3e057f926f2e9139f7d5b5dfbbaf810f7985
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Opengrep and Conftest (checksums verified)
+        run: |
+          set -euo pipefail
+          mkdir "$RUNNER_TEMP/bin"
+          curl -sSfL --retry 3 -o "$RUNNER_TEMP/bin/opengrep" \
+            "https://github.com/opengrep/opengrep/releases/download/${OPENGREP_VERSION}/opengrep_manylinux_x86"
+          echo "${OPENGREP_SHA256}  $RUNNER_TEMP/bin/opengrep" | sha256sum -c -
+          chmod +x "$RUNNER_TEMP/bin/opengrep"
+          curl -sSfL --retry 3 -o "$RUNNER_TEMP/conftest.tar.gz" \
+            "https://github.com/open-policy-agent/conftest/releases/download/v${CONFTEST_VERSION}/conftest_${CONFTEST_VERSION}_Linux_x86_64.tar.gz"
+          echo "${CONFTEST_SHA256}  $RUNNER_TEMP/conftest.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/conftest.tar.gz" -C "$RUNNER_TEMP/bin" conftest
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      # --severity ERROR runs only the ERROR rules: the WARNING rule (`any`) is skipped in CI.
+      - name: Opengrep convention rules
+        run: opengrep scan --config .opengrep/rules.yml --disable-version-check --error --severity ERROR src scripts
+      - name: Conftest policies (fixtures, then the real configs)
+        run: |
+          policy/test.sh
+          conftest test --policy policy --namespace claude_settings .claude/settings.json
+          conftest test --policy policy --namespace github_workflows .github/workflows/*.yml
+          conftest test --policy policy --namespace dependabot .github/dependabot.yml

@@ -113,7 +113,7 @@ Verdicts are decisions about tools. They are separate from the work statuses in 
 | Shared MCP servers before Phase 2 | headroom (context compression) | headroom (context compression) | The only server both shared; Phase 6 adds Serena for both and an MCP registry |
 | Model and effort | Premium model at high effort for every task | Premium model at high effort for every task | Routing by task tier arrives in Phase 7 |
 | Project-level config | `.claude/settings.json` | A repo's `.codex/config.toml` is not loaded in an untrusted project (tested in Phase 4); `AGENTS.md` is | Shared rules live in `AGENTS.md`; whether a trusted project loads `.codex/config.toml` is unverified |
-| Shell sandbox on macOS | Unverified | Not recorded | Check in Phase 5 |
+| Shell sandbox on macOS | Settings-level Bash sandbox (Seatbelt); it turns `Read` deny rules into OS-level read denies (tested in Phase 5) | Permission profiles with filesystem `deny` globs, enforced by Seatbelt (tested in Phase 5) | Both used: [GUARDRAILS.md](GUARDRAILS.md) |
 | Native OpenTelemetry export | Unverified | Unverified | Check in Phase 10 |
 
 ## 5. Target architecture
@@ -232,7 +232,7 @@ Approvals: under [`AGENTS.md` §7](../../AGENTS.md#7-risk-classes-and-approvals)
 - **Scope:** Risk classes (written as policy in [`AGENTS.md` §7](../../AGENTS.md#7-risk-classes-and-approvals) in Phase 2; Phase 5 enforces them); deny rules for Burnrate data and statements in both agents; gitleaks in pre-commit and CI; osv-scanner; Dependabot for dependency updates (`.github/dependabot.yml`); an MCP allowlist and per-agent MCP permissions for Claude Code and Codex (the full MCP registry stays in Phase 6); a ruleset on `main`; Opengrep and Conftest pilots; negative tests.
 - **Acceptance criterion:** Each risk class in `AGENTS.md` §7 is mapped to how it is enforced (deny rule, hook, CI check, or policy only). Both agents have deny rules for Burnrate data and statements. gitleaks runs before commit and in CI, and osv-scanner runs. Dependabot is configured in `.github/dependabot.yml`. Both agents have an MCP allowlist and per-agent MCP permissions. A ruleset protects `main`. Each pilot ends with a recorded keep-or-drop decision. Negative tests show that a denied read and a deliberately planted fake secret are blocked.
 - **Needs approval:** the ruleset changes how everyone pushes, so it needs the maintainer's explicit approval before it is enabled.
-- **Check first:** Claude Code's shell sandbox on macOS (unverified).
+- **Checked first:** Claude Code 2.1.245 has a settings-level Bash sandbox (Seatbelt on macOS); with it on, `Read` deny rules also block shell reads ([GUARDRAILS.md](GUARDRAILS.md#negative-tests-2026-10-18-synthetic-files-only)).
 - **Depends on:** P2, P4.
 - **Capabilities:** 2, 6.
 
@@ -326,7 +326,6 @@ Nothing is merged while a phase is in progress, so rollback is cheap. These are 
 | Item | Check in |
 |---|---|
 | Whether Codex loads a repo's `.codex/config.toml` in a trusted project (the untrusted case was answered in Phase 4) | Phase 5, only if repo-level Codex settings are needed |
-| Claude Code's shell sandbox on macOS | Phase 5 |
 | Native OpenTelemetry export from both CLIs | Phase 10 |
 
 **Open decisions for the maintainer.**

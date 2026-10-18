@@ -1,0 +1,1 @@
+{"permissions":{"deny":["Bash(cat .env*)","Bash(cat *.pdf)","Bash(cat *.csv)","Bash(cat *.sqlite)","Bash(cat *.db)","Bash(cat *burnrate*)"]}}

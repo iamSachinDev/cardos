@@ -1,0 +1,69 @@
+#!/bin/sh
+# CardOS pre-commit guard (AGENTS.md sections 5 and 8). POSIX sh.
+#
+# Enable once per clone (maintainer step, not done automatically):
+#   git config core.hooksPath .githooks
+#
+# 1. Blocks staged files whose type looks like financial data or a secret,
+#    even if force-added (gitleaks skips PDFs and cannot see personal data).
+# 2. Runs gitleaks on the staged changes.
+# It fails closed: if a check cannot run, the commit is refused. Do not work
+# around a failure; if it looks wrong, ask the maintainer.
+
+set -u
+
+fail() {
+  printf 'pre-commit: BLOCKED. %s\n' "$1" >&2
+  exit 1
+}
+
+cd "$(git rev-parse --show-toplevel)" || fail "cannot find the repository root."
+
+# --- 1. Staged file types that must never be committed ----------------------
+# File names can be real data, so only a count and the matching patterns are
+# printed, never the paths. Deleted files are ignored (removing is allowed).
+# -z: without it git quotes names holding '"', '\', a tab or a newline, and the
+# closing quote hides the extension; a newline in a name only splits it.
+# classify PATH: print the pattern label if the file type is blocked. (Kept in
+# a function because macOS's bash 3.2 cannot parse "case" inside "$( )".)
+classify() {
+  base=$(printf '%s' "${1##*/}" | tr '[:upper:]' '[:lower:]')
+  case "$base" in
+    .env.example) : ;;
+    .env | .env.* | *.env | *.env.*) echo '.env*' ;;
+    client_secret*.json) echo 'client_secret*.json' ;;
+    *.pdf | *.csv | *.tsv | *.ofx | *.qfx | *.pem | *.p12 | *.pfx | *.db)
+      echo "*.${base##*.}" ;;
+    *.xls | *.xlsx | *.xlsm | *.xlsb | *.xlt | *.xltx) echo '*.xls*' ;;
+    *.sqlite | *.sqlite3 | *.sqlite-* | *.sqlite3-*) echo '*.sqlite*' ;;
+    *.db-*) echo '*.db-*' ;;
+  esac
+}
+
+matches=$(
+  git diff --cached --name-only -z --diff-filter=ACMR | tr '\000' '\n' |
+    while IFS= read -r path; do
+      classify "$path"
+    done
+)
+if [ -n "$matches" ]; then
+  count=$(printf '%s\n' "$matches" | wc -l | tr -d ' ')
+  kinds=$(printf '%s\n' "$matches" | sort -u | tr '\n' ' ')
+  printf 'pre-commit: %s staged file(s) look like financial data or secrets.\n' "$count" >&2
+  printf 'pre-commit: patterns: %s\n' "$kinds" >&2
+  printf 'pre-commit: inspect with: git diff --staged --name-only\n' >&2
+  printf 'pre-commit: unstage with: git restore --staged <path>\n' >&2
+  fail "never commit statements, databases, env files or keys (AGENTS.md section 5)."
+fi
+
+# --- 2. Secret scan of the staged changes -----------------------------------
+if ! command -v gitleaks >/dev/null 2>&1; then
+  fail "gitleaks is not installed or not on PATH, so staged changes cannot be scanned. Install it (brew install gitleaks) or ask the maintainer. The commit is refused until the scan can run."
+fi
+
+if ! gitleaks git --staged --redact --no-banner . >&2; then
+  printf 'pre-commit: for details run: gitleaks git --staged --redact -v --no-banner .\n' >&2
+  fail "gitleaks found a possible secret, or could not finish. Do not commit; tell the maintainer."
+fi
+
+exit 0

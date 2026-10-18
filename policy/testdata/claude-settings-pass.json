@@ -1,0 +1,1 @@
+{"permissions":{"deny":["Read(**/.env*)","Read(**/*.pdf)","Read(**/*.csv)","Read(**/*.sqlite*)","Read(**/*.db)","Read(//opt/homebrew/var/burnrate/**)","Bash(cat *burnrate*)"]}}

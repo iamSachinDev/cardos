@@ -33,7 +33,7 @@ This table holds each phase's status and next action. Edit it, and the Phase 2 c
 | [P2](#p2-foundation) | Foundation | Implemented and verified | P1 | None. The maintainer reviews `ai-os/phase-2` and decides whether to merge or open a PR. |
 | [P3](#p3-spec-kit) | Spec Kit | Implemented and verified | P2 | The maintainer ratifies the constitution and accepts spec 001 (document statuses, tracked in those files), then reviews `ai-os/phase-3`. |
 | [P4](#p4-orchestration) | Orchestration | Implemented and verified | P2, P3 | None. The maintainer reviews `ai-os/phase-4` (stacked on phases 2 and 3). |
-| [P5](#p5-guardrails) | Guardrails | Not started | P2, P4 | Map the `AGENTS.md` risk classes to enforcement; ask the maintainer to approve the ruleset on `main` before enabling it. |
+| [P5](#p5-guardrails) | Guardrails | Partially implemented | P2, P4 | The maintainer decides: push and let CI run once, then apply the ruleset on `main` (P5-C5); install the Codex command rules globally or not (P5-C2). |
 | [P6](#p6-code-intelligence-and-memory) | Code intelligence and memory | Not started | P2, P5 | Pin Serena v2 and add it to Claude Code. |
 | [P7](#p7-model-routing) | Model routing | Not started | P2 | List the models and effort levels each CLI offers. |
 | [P8](#p8-docs-automation) | Docs automation | Not started | P2, P5 | List which docs are applicable to automate. |
@@ -175,12 +175,26 @@ Routing in this phase: two writer agents (balanced tier), two independent review
 | Field | Value |
 |---|---|
 | Completion criteria | Each `AGENTS.md` risk class mapped to its enforcement; deny rules for Burnrate data and statements in both agents; gitleaks in pre-commit and CI; osv-scanner running; Dependabot configured in `.github/dependabot.yml`; an MCP allowlist and per-agent MCP permissions for both agents; a ruleset on `main`; Opengrep and Conftest pilots decided; negative tests pass ([roadmap](IMPLEMENTATION-ROADMAP.md#p5-guardrails)) |
-| Chunks | Defined when the phase starts |
-| Verification evidence | None yet. Check first: Claude Code's shell sandbox on macOS (unverified), and how Dependabot handles the `latest` dependency declarations (pinning is P11) |
-| Blockers | None recorded. The ruleset on `main` needs the maintainer's explicit approval before it is enabled |
-| Security findings | Baseline from P1: `main` is unprotected, there is no CI or hooks, and the auto-mode classifier was the effective control. Deny rules and hooks are defense in depth, not a sandbox. Changes to CI, workflows and agent permissions are HIGH risk |
-| Documentation status | Not started |
-| Git commit | None |
+| Chunks | See the chunk table below |
+| Verification evidence | Recorded per chunk below; the map and negative tests are in [GUARDRAILS.md](GUARDRAILS.md) |
+| Blockers | The ruleset on `main` needs the maintainer's explicit approval and a first CI run, so it is written but not applied (P5-C5). The Codex command rules need the maintainer to install them globally (P5-C2) |
+| Security findings | Check-first answered: Claude Code's Bash sandbox (Seatbelt) is what makes a read deny hold against shell commands; without it a `python3` script read a synthetic statement. Command-text rules are bypassable by wrappers, so they are defense in depth only. `allowLocalBinding` lets sandboxed commands reach Burnrate's port. osv-scanner: 381 locked packages, no known vulnerabilities (2026-10-18). Independent review (2026-10-18) fixed 1 high and 4 medium issues: the allowed, unsandboxed `npm run ai:worktree` let a sandboxed command escape by editing the helper (now asked); `core.hooksPath` made hooks writable from the sandbox (now `denyWrite`); a wrong `.vite` write exception (removed, not needed); git-quoted names bypassed the hook (now NUL-separated); gaps in the enforcement map. Deviation: MCP is a denylist in Claude Code and all servers are off in the Codex profile, not an allowlist ([GUARDRAILS.md](GUARDRAILS.md#residual-risks)) |
+| Documentation status | Implemented and verified |
+| Git commit | Local commit on `ai-os/phase-5`, not pushed: `git log -1 ai-os/phase-5`. Base: `fad72dcd` on `ai-os/phase-4` |
+
+**Chunks:**
+
+| Chunk | Deliverable | Status | Evidence |
+|---|---|---|---|
+| P5-C0 | Branch `ai-os/phase-5` in `../cardos-ai-os`, stacked on `ai-os/phase-4`; osv-scanner 2.7.0 and Conftest 0.71.1 installed with Homebrew (the maintainer delegated the choice) | Implemented and verified | `git log` shows `ai-os/phase-5` at `fad72dcd`; both `--version` checks (2026-10-18) |
+| P5-C1 | Claude Code deny, ask and allow rules, Bash sandbox, MCP limits: `.claude/settings.json` | Implemented and verified | Writer agent; negative tests with synthetic mirrors of the real rules (Read tool and sandboxed `cat`/`python3` refused; 13 dangerous commands denied; `git push`, `npm ci` asked; claude.ai connectors and send/share tools removed from the tool list); Conftest policy passes (2026-10-18) |
+| P5-C2 | Codex profile `~/.codex/cardos.config.toml` (example in the repo) and proposed command rules | Partially implemented | Profile: OS-level read deny verified with `codex sandbox -p cardos` on synthetic files; MCP servers off (`codex -p cardos mcp list`). Command rules: `codex execpolicy check` verified, not installed (global `~/.codex/rules/` is the maintainer's call) |
+| P5-C3 | Pre-commit hook `.githooks/pre-commit`, enabled with `core.hooksPath` | Implemented and verified | Scratch-repo tests: fake secret blocked, six force-added data files blocked by count without names, normal commit passes, fails closed without gitleaks; enabled in this clone (2026-10-18) |
+| P5-C4 | CI workflow (`build`, `gitleaks`, `osv-scanner`, `policy`) and `.github/dependabot.yml` | Implemented but unverified | YAML parses; Conftest workflow and Dependabot policies pass; action SHAs and binary checksums checked against GitHub's release data. Runs only after a push |
+| P5-C5 | Ruleset on `main`: `.github/rulesets/main.json` | Blocked | Written, not applied: needs the maintainer's explicit approval and a first CI run (required checks must exist); it would also end direct commits to `main` |
+| P5-C6 | Opengrep and Conftest pilots | Implemented and verified | Both KEEP ([GUARDRAILS.md](GUARDRAILS.md#pilots)): Opengrep 1.31.0 (sha256 and Sigstore signature checked), 7 rules, 1.4 s, 1 true positive, runs offline; Conftest 3 policies, 10 fixtures as expected |
+| P5-C7 | Enforcement map and negative tests: [GUARDRAILS.md](GUARDRAILS.md); `AGENTS.md` §2 and §8 | Implemented and verified | Written by the coordinator from the writers' reports; the independent review filled the gaps (statement deletion, `.gitignore`, policy-only items) |
+| P5-C8 | Independent review, gates, local commit | Implemented and verified | Review by a premium-tier agent with synthetic tests in a scratch clone (hook: 19 cases in sh, bash 3.2 and dash; settings: `claude -p` against copies); fixes listed under Security findings. Gates: the committed hook ran, `gitleaks git --staged` exit 0, `npm run build` exit 0 |
 
 ### P6: Code intelligence and memory
 
