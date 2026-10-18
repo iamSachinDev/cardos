@@ -29,8 +29,8 @@
 .opt-skeleton { display: grid; gap: 26px; min-height: 200px; align-content: center; }
 .opt-skeleton .loading:last-child { width: 56%; }
 .opt-form label { display: grid; gap: 8px; margin-top: 18px; color: var(--muted); font-size: 12px; font-weight: 700; }
-.opt-form input { width: 100%; min-width: 0; padding: 11px 13px; border: 1px solid var(--border); border-radius: 10px; outline: none; background: var(--panel-strong); color: var(--text); font-size: 14px; font-weight: 500; }
-.opt-form input:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 17%, transparent); }
+.opt-form input, .opt-form select { width: 100%; min-width: 0; padding: 11px 13px; border: 1px solid var(--border); border-radius: 10px; outline: none; background: var(--panel-strong); color: var(--text); font-size: 14px; font-weight: 500; }
+.opt-form input:focus-visible, .opt-form select:focus-visible { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 17%, transparent); }
 .opt-form-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 22px; }
 .opt-form-actions button { display: inline-flex; align-items: center; gap: 8px; padding: 11px 16px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent); color: #fff; font-size: 13px; font-weight: 700; cursor: pointer; }
 .opt-form-actions button:disabled { opacity: .48; cursor: not-allowed; }

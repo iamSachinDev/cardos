@@ -58,3 +58,12 @@ export function publicAnnualFeeForCard(card: Pick<Card, 'bank' | 'name'>): Publi
   if (bank === 'sbi' && /\bsimply\s*click\b/.test(name)) return publicFees.sbiSimplyClick;
   return null;
 }
+
+export function personalAnnualFeeLabel(card: Card): string {
+  if (card.personalAnnualFeeBasis === 'lifetime_free') return 'No annual fee · lifetime free';
+  if (card.personalAnnualFeeBasis === 'annual_waiver') return 'Renewal waiver recorded · check current period';
+  if (card.personalAnnualFeeBasis === 'confirmed_amount' && card.personalAnnualFeeAmount != null) {
+    return `Recorded annual fee · ₹${card.personalAnnualFeeAmount.toLocaleString('en-IN')}`;
+  }
+  return 'Not confirmed';
+}
