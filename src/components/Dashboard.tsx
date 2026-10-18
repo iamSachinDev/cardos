@@ -33,7 +33,7 @@ export default function Dashboard(){
     </div>
 
     <div className="grid grid-2 section">
-      <section className="card"><div className="section-title-row"><div><div className="section-title">Spending velocity</div><div className="muted" style={{fontSize:12,marginTop:4}}>Monthly trend across imported statements</div></div><span className="pill">Live</span></div><LineChart data={trendData}/></section>
+      <section className="card"><div className="section-title-row"><div><div className="section-title">Spending velocity</div><div className="muted" style={{fontSize:12,marginTop:4}}>Monthly trend across imported statements</div></div><div style={{display:'flex',gap:8,alignItems:'center'}}><a href="/analytics" className="muted" style={{fontSize:12}}>6M trend →</a><span className="pill">Live</span></div></div><LineChart data={trendData}/></section>
       <section className="card"><div className="section-title-row"><div className="section-title">Next payments</div><a className="muted" href="/bills" style={{fontSize:12}}>View all →</a></div>
         {dues.length?dues.slice(0,5).map(d=><div className="due-item" key={`${d.cardId}-${d.dueDate}`}><span className="due-dot"/><div><strong>{bankLabel(d.bank)} ····{d.cardLast4}</strong><div className="due-date">Due {formatDate(d.dueDate)}</div></div><div className="due-amount">{formatCurrency(d.totalAmountDue,d.currency||'INR')}</div></div>):<div className="empty">No upcoming dues yet.<br/>Import statements to populate bill reminders.</div>}
       </section>
