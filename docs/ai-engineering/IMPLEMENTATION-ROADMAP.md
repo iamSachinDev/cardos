@@ -112,7 +112,7 @@ Verdicts are decisions about tools. They are separate from the work statuses in 
 | Code navigation (Serena) | Not configured yet; added in Phase 6 | Already in use | Supports TS, TSX and Astro |
 | Shared MCP servers before Phase 2 | headroom (context compression) | headroom (context compression) | The only server both shared; Phase 6 adds Serena for both and an MCP registry |
 | Model and effort | Premium model at high effort for every task | Premium model at high effort for every task | Routing by task tier arrives in Phase 7 |
-| Project-level config | `.claude/settings.json` | Unverified | Check where Codex keeps it in Phase 4 |
+| Project-level config | `.claude/settings.json` | A repo's `.codex/config.toml` is not loaded in an untrusted project (tested in Phase 4); `AGENTS.md` is | Shared rules live in `AGENTS.md`; whether a trusted project loads `.codex/config.toml` is unverified |
 | Shell sandbox on macOS | Unverified | Not recorded | Check in Phase 5 |
 | Native OpenTelemetry export | Unverified | Unverified | Check in Phase 10 |
 
@@ -221,9 +221,9 @@ Approvals: under [`AGENTS.md` §7](../../AGENTS.md#7-risk-classes-and-approvals)
 
 ### P4: Orchestration
 
-- **Scope:** One worktree per task plus a helper; ownership recorded in `tasks.md` and `.ai/CURRENT.md`; a demonstrated Claude-to-Codex handoff.
-- **Acceptance criterion:** The helper creates a worktree and branch for a task. Ownership of each task is recorded in `tasks.md` and `.ai/CURRENT.md`. One task is handed from Claude Code to Codex end to end, with the evidence recorded and neither agent touching the other's working tree.
-- **Check first:** where Codex keeps project-level config (unverified).
+- **Scope:** One worktree per task plus a helper; ownership recorded in the branch name, git config provenance and a per-task file `.ai/tasks/<task>.md` (spec-driven tasks also reference their `tasks.md` IDs); a demonstrated Claude-to-Codex handoff.
+- **Acceptance criterion:** The helper creates a worktree and branch for a task. Ownership of each task is recorded in its branch name (`ai/<agent>/<task>`), git config provenance and `.ai/tasks/<task>.md` (refined at phase start: `tasks.md` exists only for spec-driven features, and one shared file would conflict between concurrent tasks). One task is handed from Claude Code to Codex end to end, with the evidence recorded and neither agent touching the other's working tree.
+- **Checked first:** a repo's `.codex/config.toml` is not loaded in an untrusted project, while `AGENTS.md` is ([PHASE-STATUS P4-C1](PHASE-STATUS.md#p4-orchestration)).
 - **Depends on:** P2, P3.
 - **Capabilities:** 1.
 
@@ -314,7 +314,7 @@ Not proposed: self-hosted Langfuse (it needs Postgres, ClickHouse, Redis and obj
 
 Nothing is merged while a phase is in progress, so rollback is cheap. These are the maintainer's calls, because removing a worktree or branch discards work.
 
-- **Before a merge:** remove the worktree and delete the branch. For Phase 2, from the main checkout: `git worktree remove ../cardos-ai-os`, then `git branch -D ai-os/phase-2`. Git refuses to remove a worktree that holds untracked files, so check what they are before forcing it.
+- **Before a merge:** remove the worktree and delete the branch. For Phase 2, from the main checkout: `git worktree remove ../cardos-ai-os`, then `git branch -D ai-os/phase-2`. Git refuses to remove a worktree that holds untracked files, so check what they are before forcing it. It deletes ignored files without asking, and those can be statements or `.env` files: check `git -C ../cardos-ai-os status --ignored` first.
 - **After a merge:** `git revert` the merge or the commits.
 - **Tools:** installs go through `uv tool` or Homebrew with pinned versions, so `uv tool uninstall` or `brew uninstall` undoes them.
 - **Rules and hooks:** these are files in the repo, so `git revert` removes them. The ruleset on `main` is a GitHub setting, so it is disabled or deleted there.
@@ -325,7 +325,7 @@ Nothing is merged while a phase is in progress, so rollback is cheap. These are 
 
 | Item | Check in |
 |---|---|
-| Where Codex keeps project-level config | Phase 4 |
+| Whether Codex loads a repo's `.codex/config.toml` in a trusted project (the untrusted case was answered in Phase 4) | Phase 5, only if repo-level Codex settings are needed |
 | Claude Code's shell sandbox on macOS | Phase 5 |
 | Native OpenTelemetry export from both CLIs | Phase 10 |
 

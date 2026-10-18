@@ -10,7 +10,7 @@
 
 ## Claude Code notes
 
-- **Parallel work:** use `claude --worktree` or a dedicated `git worktree` for every task, and never share a working tree with another agent.
+- **Parallel work:** start every task with `npm run ai:worktree -- new <task> --agent claude` (or `claude --worktree`), never share a working tree with another agent, and hand off only as described in [.ai/runbooks/handoff.md](.ai/runbooks/handoff.md).
 - **Subagents:** put the data-protection rules (AGENTS.md §5) and the staging rules (§6) in every subagent prompt, and tell it to stop and report if it meets real data or unexpected changes. You stay responsible for what it does.
 - **Permissions:** treat permission prompts, denials and the auto-mode classifier as real boundaries. After a denial, don't retry another way, edit settings or permission files, or hand the action to a subagent; ask the maintainer.
 - **Session end:** update [.ai/CURRENT.md](.ai/CURRENT.md) concisely (no secrets, no transcripts).

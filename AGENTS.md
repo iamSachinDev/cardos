@@ -29,6 +29,7 @@ Stack (installed versions, 2026-10-17): Astro 7.4 (static output) with React 19.
 | `npm run cardos` | Checks and, if needed, starts Burnrate's Homebrew service (restarting it if unresponsive) and a detached Astro server; opens a browser | HIGH | No, ask |
 | `npm run gmail:setup` | Writes Burnrate's OAuth env file (holds the client secret) and restarts Burnrate | HIGH | Never: maintainer only |
 | `npm ci` | Reinstalls dependencies from the lockfile, replacing `node_modules/` | MEDIUM | No, ask |
+| `npm run ai:worktree -- <new\|list\|handoff\|remove>` | One worktree and branch per agent task, with ownership and safe handoff ([runbook](.ai/runbooks/handoff.md)); never forces or deletes unmerged work | LOW | Yes, for your own tasks |
 
 - Verified 2026-10-17: the first seven commands exit 0 on a clean tree (`npm run check`: 33 files, 0 errors, 0 warnings, 0 hints; `npm run build`: 12 pages). The three scans also exit 1 and print a redacted finding for a synthetic fake token in a scratch repo.
 - gitleaks: exit 0 = clean, 1 = findings. Keep `--redact` so secrets are never printed; `-v` prints finding details (without it you only get a count). On a finding: stop, don't rewrite history, tell the maintainer.
@@ -69,12 +70,12 @@ Burnrate holds real financial data, and this repo is public.
 
 Why: on 2026-10-17 two agents edited one working tree; one agent's commit swept in the other's uncommitted edit, which imported an uncommitted file, so `main` did not build until a later commit fixed it.
 
-1. **One worktree and branch per agent task** (`git worktree add`, `claude --worktree`, or Codex worktrees). `main` is for the maintainer.
+1. **One worktree and branch per agent task** (`git worktree add`, `claude --worktree`, or Codex worktrees). `main` is for the maintainer. To start a task, run `npm run ai:worktree -- new <task> --agent <you>`: it creates branch `ai/<agent>/<task>` in worktree `../cardos-wt/<agent>-<task>`.
 2. Run `git status` before starting and before committing. If you find changes you did not make, **stop and ask**.
 3. **Stage explicit paths only** (`git add path/a path/b`). Never `git add -A`, `git add .` or `git commit -a` in a shared tree.
 4. Never commit, revert, stash, reset or overwrite changes you did not make.
 5. Don't push, and don't touch `main`, unless the maintainer asks: pushing publishes to a public repo.
-6. Record ownership and state in [.ai/CURRENT.md](.ai/CURRENT.md); hand off by updating it.
+6. Keep each task's state in `.ai/tasks/<task>.md` on the task's branch (the helper creates it); `npm run ai:worktree -- list` shows who owns which worktree, and [.ai/CURRENT.md](.ai/CURRENT.md) is the short session summary. Hand off only with `npm run ai:worktree -- handoff <task> --from <you> --to <other>`, after committing everything, that file included (steps: [.ai/runbooks/handoff.md](.ai/runbooks/handoff.md)).
 
 ## 7. Risk classes and approvals
 
@@ -124,7 +125,8 @@ Start a session with [.ai/CURRENT.md](.ai/CURRENT.md), then [.ai/INDEX.md](.ai/I
 
 - [.ai/INDEX.md](.ai/INDEX.md): knowledge map in HOT / WARM / COLD tiers.
 - [.ai/CONTEXT.md](.ai/CONTEXT.md): verified architecture and system context.
-- [.ai/CURRENT.md](.ai/CURRENT.md): session handoff (state, ownership, next steps).
+- [.ai/CURRENT.md](.ai/CURRENT.md): session summary (state, ownership, next steps).
+- `.ai/tasks/<task>.md`: one agent task's owner, state, next step and history, on that task's branch. [.ai/runbooks/handoff.md](.ai/runbooks/handoff.md): how to start, hand off, resume and finish a task.
 - [docs/ai-engineering/README.md](docs/ai-engineering/README.md): the AI-engineering setup, its roadmap and phase status.
 - `.specify/` and `specs/`: Spec Kit 1.2.1 (the constitution, templates and feature specs with requirement IDs). Claude Code runs `/speckit-<command>`, Codex `$speckit-<command>`. `/speckit-specify` creates `specs/NNN-name/` and points the per-checkout `.specify/feature.json` (gitignored) at it for the later commands, so run Spec Kit only in your own task worktree. No Spec Kit git extension is installed, so it creates no branches.
 
