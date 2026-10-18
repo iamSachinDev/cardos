@@ -43,13 +43,15 @@ Burnrate can pull statement attachments (PDF, CSV, XLS) from Gmail with read-onl
 3. Run `npm run gmail:setup -- ~/Downloads/client_secret_….json` (or run it without a path to paste the ID and secret). It writes Burnrate's `libexec/.env.production` (mode 600), points the OAuth redirect back to CardOS Settings, and restarts the Burnrate service.
 4. Open Settings in CardOS and choose **Connect Gmail**. The first sync runs as soon as Google redirects back.
 
-After that, Burnrate syncs Gmail each time its service starts (at most hourly), and **Sync Gmail** in the top bar or **Sync now** in Settings syncs on demand. Each sync scans up to 200 matching emails from the last 120 days and saves new attachments to the watch folder; attachments saved by an earlier sync are skipped. While the consent screen is in Testing, Google expires the connection after 7 days; choose **Reconnect** in Settings, or publish the consent screen for your own use.
+After that, Burnrate syncs Gmail each time its service starts (at most hourly), and **Sync Gmail** in the top bar or **Sync now** in Settings syncs on demand. With the one-year patch below, each sync pages through all matching emails from the last 365 days and saves new attachments to the watch folder; attachments saved by an earlier sync are skipped. While the consent screen is in Testing, Google expires the connection after 7 days. An administrator must add the Gmail account to the OAuth test-user list, and long-lived sync requires a production-ready Google OAuth configuration.
 
 ### Burnrate patch
 
 [patches/burnrate-0.5.2.patch](patches/burnrate-0.5.2.patch) fixes Burnrate 0.5.2 issues found with Gmail sync: duplicate downloads and double processing, the 40-email cap, bank detection for Gmail-named files (ICICI, Standard Chartered, SBI), a Standard Chartered statement parser, password fallbacks, and skipping non-card PDFs (broker, mutual fund, loan, bank account, EMI letters) instead of creating failed rows. To ignore other non-card attachments, set `BURNRATE_IGNORE_FILENAME_REGEX` in Burnrate's `.env.production`.
 
-`brew upgrade burnrate` replaces the `libexec` folder, which removes both the patch and `.env.production`. Afterwards, reapply the patch with `patch -p0 -d "$(brew --prefix burnrate)/libexec" < patches/burnrate-0.5.2.patch`, rerun `npm run gmail:setup`, and restart the service. If the patch no longer applies to a newer Burnrate, check whether the new version already fixes these issues.
+[patches/burnrate-gmail-one-year.patch](patches/burnrate-gmail-one-year.patch) extends the existing Burnrate Gmail query from 120 to 365 days and follows every result page, so the former 200-message cap cannot hide older statements. Apply it **after** the 0.5.2 patch: `patch -p1 -d "$(brew --prefix burnrate)/libexec" < patches/burnrate-gmail-one-year.patch`, then restart Burnrate. The query still limits results to statement-like emails with supported attachments. If any Gmail list page fails, the sync reports an error and does not advance its last-sync time; retry after the error clears.
+
+`brew upgrade burnrate` replaces the `libexec` folder, which removes the patches and `.env.production`. Afterwards, reapply the 0.5.2 patch with `patch -p0 -d "$(brew --prefix burnrate)/libexec" < patches/burnrate-0.5.2.patch`, then apply the one-year patch as above, rerun `npm run gmail:setup`, and restart the service. If a patch no longer applies to a newer Burnrate, check whether the new version already fixes these issues.
 
 ## Security and local configuration
 
