@@ -31,7 +31,7 @@ export default function SettingsView() {
   const runGmailSync = async (pending = 'Checking Gmail for statements…') => {
     setGmailBusy(true); setGmailMessage(pending);
     try { const result = await syncGmail(); setGmailMessage(`Queued ${result.attachments_queued ?? 0} attachments from ${result.messages_scanned ?? 0} emails for processing.`); }
-    catch (error) { setGmailMessage(gmailNeedsReconnect(error) ? 'Gmail needs to be reconnected. Choose Reconnect to sign in again.' : 'Gmail sync did not finish. Try Sync now again.'); }
+    catch (error) { setGmailMessage(gmailNeedsReconnect(error) ? 'Gmail needs to be reconnected. Choose Reconnect to sign in again.' : 'Gmail check did not finish. Try Check Gmail again.'); }
     finally { setGmailBusy(false); }
   };
   const startGmailConnect = async () => {
@@ -76,12 +76,12 @@ export default function SettingsView() {
         <div className="opt-form-actions"><button type="submit" disabled={!dirty || saving}><Save size={16} />{saving ? 'Saving…' : 'Save settings'}</button><span role="status" aria-live="polite">{message}</span></div>
       </form>
       <section className="opt-panel opt-connect"><div className="opt-panel-top"><span className="opt-icon"><Mail size={18} /></span><span className={`opt-tag ${gmailConnected ? 'opt-connected' : ''}`}>{gmailConnected ? 'Connected' : gmail?.configured ? 'Not connected' : 'Not configured'}</span></div><h3>Gmail integration</h3>
-        <p className="opt-secondary">{gmailConnected ? 'Gmail is connected to Burnrate with read-only access. Burnrate checks for statement emails from the last 120 days when it starts, and you can sync any time.'
+        <p className="opt-secondary">{gmailConnected ? 'Burnrate has a saved read-only Gmail connection. Checking Gmail queues statement attachments for processing; it does not confirm an import. Burnrate does not report which address is connected, and the last check may predate a reconnect.'
           : gmail?.configured ? 'Connect the Gmail account that receives your card statements. Burnrate requests read-only access and saves statement attachments to your watch folder.'
           : <>Gmail auto-sync not configured. Run <code>npm run gmail:setup</code> in the CardOS folder to add a Google OAuth client. Statement processing and the rest of CardOS work without it.</>}</p>
-        {gmail?.last_sync && <div className="opt-data"><span>Last Gmail sync</span><strong className="opt-small">{formatDateTime(gmail.last_sync)}</strong></div>}
+        {gmail?.last_sync && <div className="opt-data"><span>Last completed Gmail check</span><strong className="opt-small">{formatDateTime(gmail.last_sync)}</strong></div>}
         {gmail?.configured && <div className="opt-form-actions">
-          {gmailConnected && <button type="button" disabled={gmailBusy} onClick={() => void runGmailSync()}><RefreshCw size={16} />{gmailBusy ? 'Syncing…' : 'Sync now'}</button>}
+          {gmailConnected && <button type="button" disabled={gmailBusy} onClick={() => void runGmailSync()}><RefreshCw size={16} />{gmailBusy ? 'Checking…' : 'Check Gmail'}</button>}
           <button type="button" disabled={gmailBusy} onClick={() => void startGmailConnect()}><Mail size={16} />{gmailConnected ? 'Reconnect' : 'Connect Gmail'}</button>
           <span role="status" aria-live="polite">{gmailMessage}</span></div>}
         {!gmail?.configured && gmailMessage && <p className="opt-secondary" role="status">{gmailMessage}</p>}</section>
