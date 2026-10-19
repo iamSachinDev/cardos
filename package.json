@@ -9,6 +9,7 @@
     "cardos": "node scripts/start-cardos.mjs",
     "gmail:setup": "node scripts/configure-gmail.mjs",
     "ai:worktree": "node scripts/ai-worktree.mjs",
+    "ai:models": "node scripts/check-model-policy.mjs",
     "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "start": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "build": "ASTRO_TELEMETRY_DISABLED=1 astro check && ASTRO_TELEMETRY_DISABLED=1 astro build",

@@ -20,6 +20,9 @@ playwright-report/
 
 # Local financial data and imports
 data/
+!policy/data/
+policy/data/*
+!policy/data/cli-capabilities.json
 local-data/
 uploads/
 imports/

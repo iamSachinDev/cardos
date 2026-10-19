@@ -1,0 +1,63 @@
+# Fixture: must fail (balanced-low).
+version: 1
+
+# Tiers are ordered low to high. Claude values are `--model` aliases and `--effort` levels; Codex values are
+# `-m` models and `model_reasoning_effort` levels. Aliases follow the newest model of a family, so the policy
+# does not break when a CLI update moves one (what they resolve to is recorded in policy/data/cli-capabilities.json).
+tier_order: [fast, balanced, premium]
+
+tiers:
+  fast:
+    claude: { model: haiku, effort: low }
+    codex: { model: gpt-6-luna, effort: low }
+    use_for:                          # LOW class only, nothing that needs judgment
+      - quizzes and load tests that check an agent loads a rule file
+      - visibility checks (skills, MCP tools, settings)
+      - mechanical edits: renames, formatting, copying a known value
+  balanced:
+    claude: { model: sonnet, effort: medium }
+    codex: { model: gpt-6.1-sol, effort: low }
+    use_for:                          # LOW and MEDIUM class
+      - writers: documentation, .ai/ notes, specs
+      - routine code in src/ and scripts/ after an approved plan (MEDIUM)
+      - verifiers that re-run checks, and first-pass reading-comprehension checks over long files
+  premium:
+    claude: { model: opus, effort: high }
+    codex: { model: gpt-6-astra, effort: high }
+    use_for:                          # every class; required for HIGH and CRITICAL
+      - independent review of another agent's work
+      - HIGH and CRITICAL class work (AGENTS.md section 7): Burnrate, Gmail/OAuth, money or due-date logic, CI and agent-rule files, anything touching secrets or data deletion
+      - security analysis and architecture decisions
+
+# Lowest tier allowed per AGENTS.md section 7 risk class. If unsure which class applies, use the higher one.
+minimum_tier:
+  LOW: fast
+  MEDIUM: balanced
+  HIGH: premium
+  CRITICAL: premium
+
+escalation:
+  # A failed check, a partial file read or a wrong answer moves the retry up exactly one tier.
+  on_failed_check: one_tier_up
+  # Evidence P3-C6b (PHASE-STATUS.md): Codex at low effort read only part of a long spec and scored 4/5; at medium it read the file and scored 5/5.
+  floors:
+    reading_comprehension_long_files: balanced
+  # HIGH and CRITICAL never start below premium and never step down to save cost.
+  high_and_critical: always_premium
+  # Premium has nowhere higher to go: stop and ask the maintainer instead of raising effort without limit.
+  on_premium_failure: stop_and_ask_maintainer
+
+# Where the allowed values were verified (version and date must match policy/data/cli-capabilities.json).
+sources:
+  claude:
+    version: 2.1.303
+    verified: 2026-10-19
+    note: claude --help (--model, --effort), docs code.claude.com via Context7, one haiku/low confirmation run
+  codex:
+    version: 0.163.0
+    verified: 2026-10-19
+    note: codex debug models --bundled, codex exec --help, openai/codex docs via Context7
+
+# How to apply a tier:
+#   Claude Code:  claude --model <model> --effort <effort> ...   Subagents: `model:` and `effort:` in the agent's frontmatter.
+#   Codex CLI:    codex exec -m <model> -c model_reasoning_effort="<effort>" ...

@@ -35,7 +35,7 @@ This table holds each phase's status and next action. Edit it, and the Phase 2 c
 | [P4](#p4-orchestration) | Orchestration | Implemented and verified | P2, P3 | None. The maintainer reviews `ai-os/phase-4` (stacked on phases 2 and 3). |
 | [P5](#p5-guardrails) | Guardrails | Partially implemented | P2, P4 | The maintainer decides: push and let CI run once, then apply the ruleset on `main` (P5-C5); install the Codex command rules globally or not (P5-C2). |
 | [P6](#p6-code-intelligence-and-memory) | Code intelligence and memory | Implemented and verified | P2, P5 | The maintainer decides: accept the 5-day-old Serena pin as an exception, pin Serena in the default Codex config, and accept ADR 0002. |
-| [P7](#p7-model-routing) | Model routing | Not started | P2 | List the models and effort levels each CLI offers. |
+| [P7](#p7-model-routing) | Model routing | Implemented and verified | P2 | The maintainer reviews the local `ai-os/phase-7` branch and decides whether to merge or open a PR. |
 | [P8](#p8-docs-automation) | Docs automation | Not started | P2, P5 | List which docs are applicable to automate. |
 | [P9](#p9-evaluation-and-quality) | Evaluation and quality | Not started | P5 | Choose the `src/lib` test scope for Vitest. |
 | [P10](#p10-dashboard) | Dashboard | Not started | P2, P5, P9 | Define the status view from this file, Actions and Promptfoo reports. |
@@ -225,12 +225,12 @@ Routing in this phase: two writer agents (balanced tier), two independent review
 | Field | Value |
 |---|---|
 | Completion criteria | `model-policy.yaml` maps task tiers to real Claude and Codex models and effort levels, and a dry-run checker validates it without running an agent ([roadmap](IMPLEMENTATION-ROADMAP.md#p7-model-routing)) |
-| Chunks | Defined when the phase starts |
-| Verification evidence | None yet. Precedent: the Phase 2 routing record in [P2](#p2-foundation) |
-| Blockers | None recorded |
-| Security findings | None yet. Constraint: routing uses each CLI's native model switching, because OmniRoute is REJECT (it routes prompts to third-party providers) |
-| Documentation status | Not started |
-| Git commit | None |
+| Chunks | Capability inventory; tier policy and Conftest rules; local CLI drift checker; synthetic failure fixtures; independent review and gates |
+| Verification evidence | 2026-10-19: Claude Code 2.1.303 `--help`/bundle and Codex CLI 0.163.0 bundled catalog checked without an agent prompt. `npm run ai:models` exit 0; real policy Conftest 24/24; `bash policy/test.sh` passes all 25 fixtures, including premium model and effort downgrades; scratch checks return exit 1 on version drift and exit 2 when CLIs are missing; `npm run build` 35 files, 0 diagnostics; `gitleaks dir --redact -v --no-banner .` exit 0. Phase 2 routing precedent is in [P2](#p2-foundation). |
+| Blockers | None for the local implementation. Publishing or merging remains a maintainer decision. |
+| Security findings | Routing uses each CLI's native model switching; OmniRoute remains REJECT because it routes prompts to third-party providers. The Conftest CI check validates the recorded catalog, while `npm run ai:models` validates local installed CLIs; account access to a listed model is not proven without an agent run. |
+| Documentation status | Roadmap, phase status, README and `.ai/CURRENT.md` updated |
+| Git commit | Local `ai-os/phase-7` branch; see `git log -1` |
 
 ### P8: Docs automation
 

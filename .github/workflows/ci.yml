@@ -136,3 +136,4 @@ jobs:
           conftest test --policy policy --namespace claude_settings .claude/settings.json
           conftest test --policy policy --namespace github_workflows .github/workflows/*.yml
           conftest test --policy policy --namespace dependabot .github/dependabot.yml
+          conftest test --policy policy --data policy/data --namespace model_policy model-policy.yaml
