@@ -4,7 +4,7 @@
 - **Audience:** the next Claude Code or Codex session, and the maintainer.
 - **Owner:** whoever holds the active branch below; update at the end of every session.
 - **Related docs:** [AGENTS.md](../AGENTS.md) · [INDEX](INDEX.md) · [PHASE-STATUS](../docs/ai-engineering/PHASE-STATUS.md) · [handoff runbook](runbooks/handoff.md)
-- **How to validate:** `git worktree list`, `npm run ai:worktree -- list` and `git log --oneline -3 ai-os/phase-4` match the branches and state below.
+- **How to validate:** `git worktree list`, `npm run ai:worktree -- list` and `git log -1 ai-os/phase-7` match the branches and state below.
 
 Keep this file short: state and pointers, no secrets, no transcripts, no personal or financial data. Each agent task keeps its own state in `.ai/tasks/<task>.md` on its branch; this file is the session summary.
 
@@ -12,10 +12,10 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 
 | Field | Value |
 |---|---|
-| Phase | 7: Model routing, implemented and verified ([status](../docs/ai-engineering/PHASE-STATUS.md#p7-model-routing)). Phase 6 and phases 2 to 4: Implemented and verified. Phase 5: Partially implemented. |
-| Chunk | Phase 7 local implementation complete; maintainer review next |
-| Branches / worktree | `ai-os/phase-7` in `../cardos-ai-os`, stacked on phases 2 to 6, based on `main` at `e7598889`. None of these branches is merged or pushed. This clone has `core.hooksPath=.githooks` set |
-| Owner | Claude Code began Phase 7; Codex completed validation and documentation on the maintainer's continuation request. The maintainer reviews and merges or closes the branch. |
+| Phase | 8: Docs automation, partially implemented ([status](../docs/ai-engineering/PHASE-STATUS.md#p8-docs-automation)); local checks are ready, CI wiring is deferred. Phase 7, Phase 6 and phases 2 to 4: Implemented and verified. Phase 5: Partially implemented. |
+| Chunk | Generated route inventory, link checker and advisory doc-impact report in the local Phase 8 branch |
+| Branches / worktree | `ai/codex/docs-automation` in `../cardos-wt/codex-docs-automation`, based on `ai-os/phase-7` in `../cardos-ai-os`; earlier phases are stacked from `main` at `e7598889`. None of these branches is merged or pushed. This clone has `core.hooksPath=.githooks` set |
+| Owner | Codex owns the Phase 8 task branch and its [task file](tasks/docs-automation.md); the maintainer reviews before merge or publication. |
 | Main checkout | `../cardos` on `main`: the maintainer and Codex work there. `main` has moved ahead of the AI-OS base (`git log --oneline e7598889..main`; see known problem 6); none of those commits touch AI-OS files. Don't edit it from these branches |
 | Specification | [`specs/001-gmail-sync/spec.md`](../specs/001-gmail-sync/spec.md): Draft (retroactive), pending the maintainer's acceptance. Constitution [`.specify/memory/constitution.md`](../.specify/memory/constitution.md) v1.0.0: Proposed, pending ratification |
 | Last updated | 2026-10-19 |
@@ -64,9 +64,10 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 
 ## Next steps
 
-1. The maintainer reviews the five stacked branches (merging `ai-os/phase-6` brings in phases 2 to 6). After the merge, Codex's default Serena in CardOS becomes read-only too.
+1. The maintainer reviews the stacked AI-OS branches (merging `ai-os/phase-7` brings in phases 2 to 7). After the merge, Codex's default Serena in CardOS becomes read-only too.
 2. Phase 5 decisions: apply the `main` ruleset after a push and a first CI run; install the Codex command rules or not.
 3. Phase 6 decisions: accept the Serena 2.0.0 pin (5 days old when pinned) or wait until 2026-10-27; pin Serena in the default Codex config; accept ADR 0002.
 4. Phase 7 model routing is implemented on `ai-os/phase-7`: policy, CLI capability catalog, dry-run checker, Conftest rules and fixtures. Local checks pass (see Phase 7 status). The maintainer reviews the local branch before merge or publication.
+5. Phase 8 local docs checks are on `ai/codex/docs-automation`. The route inventory, link checker and advisory impact command work locally. CI wiring remains deferred.
 
-Relevant commit: the latest commit on `ai-os/phase-6` (`git log -1 ai-os/phase-6`).
+Relevant completed commit: `c0b036a4` on `ai-os/phase-7`.

@@ -13,8 +13,8 @@ Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **C
 | [`AGENTS.md`](../AGENTS.md) | Shared rules for every agent: commands, conventions, data protection, multi-agent rules, risk classes, commit checklist | HOT | maintainer | — |
 | [`CLAUDE.md`](../CLAUDE.md) | Claude Code entrypoint; imports `AGENTS.md` | HOT | maintainer | — |
 | [`.ai/CURRENT.md`](CURRENT.md) | Session summary: state, ownership, next steps | HOT | maintainer | — |
-| [`.ai/INDEX.md`](INDEX.md) | This map: what to load for which task | HOT | maintainer | 2026-10-18 |
-| [`.ai/CONTEXT.md`](CONTEXT.md) | Verified architecture: topology, module map, data flow, endpoints, scripts | WARM | maintainer | 2026-10-18 |
+| [`.ai/INDEX.md`](INDEX.md) | This map: what to load for which task | HOT | maintainer | 2026-10-19 |
+| [`.ai/CONTEXT.md`](CONTEXT.md) | Verified architecture: topology, module map, data flow, endpoints, scripts | WARM | maintainer | 2026-10-19 (documentation tooling only) |
 | [`.ai/decisions/0001-local-burnrate-patch.md`](decisions/0001-local-burnrate-patch.md) | ADR: why Burnrate is patched locally and what the patches change | WARM | maintainer | 2026-10-18 |
 | [`.ai/decisions/0002-agent-memory.md`](decisions/0002-agent-memory.md) | ADR (Proposed): why ai-memory is deferred and `.ai/` handoffs are the shared memory; ai-memory facts and revisit conditions | WARM | maintainer | 2026-10-18 |
 | [`.ai/LIFECYCLE.md`](LIFECYCLE.md) | Lifecycle rules for every `.ai/` file and for local agent memory: who creates, updates, reviews, retires, size limits, what never goes in | WARM | maintainer | 2026-10-18 |
@@ -25,10 +25,12 @@ Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **C
 | [`docs/ai-engineering/GUARDRAILS.md`](../docs/ai-engineering/GUARDRAILS.md) | How each risk class is enforced: deny rules, sandboxes, hook, CI, policies | WARM | maintainer | 2026-10-18 |
 | [`docs/ai-engineering/MCP-REGISTRY.md`](../docs/ai-engineering/MCP-REGISTRY.md) | The MCP servers allowed per agent: pins, limits, how to add one | WARM | maintainer | 2026-10-18 |
 | [`docs/ai-engineering/PHASE-STATUS.md`](../docs/ai-engineering/PHASE-STATUS.md) | Status of each phase | WARM | maintainer | — |
+| [`docs/ai-engineering/DOCS-AUTOMATION.md`](../docs/ai-engineering/DOCS-AUTOMATION.md) | Phase 8 generated and checked docs; Not applicable types | WARM | maintainer | 2026-10-19 |
+| [`docs/ai-engineering/ROUTES.md`](../docs/ai-engineering/ROUTES.md) | Generated Astro route inventory | WARM | maintainer | 2026-10-19 |
 | [`README.md`](../README.md) | User docs: run, data, Gmail setup, Burnrate patch | WARM | maintainer | 2026-10-18 (partial) |
 | [`patches/burnrate-0.5.2.patch`](../patches/burnrate-0.5.2.patch) | Local fixes to Burnrate 0.5.2 (840 lines) | WARM | maintainer | 2026-10-18 |
 | [`patches/burnrate-password-reparse-preserve.patch`](../patches/burnrate-password-reparse-preserve.patch) | Follow-up: keep a locked statement when a password retry fails. Not in the README (see ADR 0001) | WARM | maintainer | 2026-10-18 |
-| [`scripts/`](../scripts/) | `start-cardos.mjs` (launcher), `configure-gmail.mjs` (Gmail setup) and `ai-worktree.mjs` (agent task worktrees, `npm run ai:worktree`) | WARM | maintainer | 2026-10-18 |
+| [`scripts/`](../scripts/) | App setup and agent worktrees; model-policy and documentation checks | WARM | maintainer | 2026-10-19 (documentation tooling only) |
 | [`.specify/memory/constitution.md`](../.specify/memory/constitution.md) | Spec Kit constitution: durable principles and governance (proposed, pending ratification) | WARM | maintainer | 2026-10-18 |
 | [`specs/001-gmail-sync/spec.md`](../specs/001-gmail-sync/spec.md) | Retroactive spec of Gmail sync: requirement IDs, edge cases, traceability (draft) | WARM | maintainer | 2026-10-18 |
 | `.specify/` (templates, scripts, workflows, integration config), `.claude/skills/speckit-*`, `.agents/skills/speckit-*` | Spec Kit 1.2.1 install and its commands for each agent; managed by the `specify` CLI, don't hand-edit | COLD | maintainer | 2026-10-18 |

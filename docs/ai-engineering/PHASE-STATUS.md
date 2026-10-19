@@ -36,7 +36,7 @@ This table holds each phase's status and next action. Edit it, and the Phase 2 c
 | [P5](#p5-guardrails) | Guardrails | Partially implemented | P2, P4 | The maintainer decides: push and let CI run once, then apply the ruleset on `main` (P5-C5); install the Codex command rules globally or not (P5-C2). |
 | [P6](#p6-code-intelligence-and-memory) | Code intelligence and memory | Implemented and verified | P2, P5 | The maintainer decides: accept the 5-day-old Serena pin as an exception, pin Serena in the default Codex config, and accept ADR 0002. |
 | [P7](#p7-model-routing) | Model routing | Implemented and verified | P2 | The maintainer reviews the local `ai-os/phase-7` branch and decides whether to merge or open a PR. |
-| [P8](#p8-docs-automation) | Docs automation | Not started | P2, P5 | List which docs are applicable to automate. |
+| [P8](#p8-docs-automation) | Docs automation | Partially implemented | P2, P5 | Local generation, link checking and doc-impact reporting are ready on `ai/codex/docs-automation`; CI wiring remains deferred. |
 | [P9](#p9-evaluation-and-quality) | Evaluation and quality | Not started | P5 | Choose the `src/lib` test scope for Vitest. |
 | [P10](#p10-dashboard) | Dashboard | Not started | P2, P5, P9 | Define the status view from this file, Actions and Promptfoo reports. |
 | [P11](#p11-production) | Production | Not started | P5 | Pin the `latest` dependencies; outline the Burnrate DB backup and restore runbook. |
@@ -237,12 +237,12 @@ Routing in this phase: two writer agents (balanced tier), two independent review
 | Field | Value |
 |---|---|
 | Completion criteria | A written list of automated docs and Not applicable doc types; link checking runs; a CI doc-impact check reports when a change may need a doc update ([roadmap](IMPLEMENTATION-ROADMAP.md#p8-docs-automation)) |
-| Chunks | Defined when the phase starts |
-| Verification evidence | None yet |
-| Blockers | None recorded |
-| Security findings | None yet |
-| Documentation status | Not started |
-| Git commit | None |
+| Chunks | [Applicable and Not applicable document list](DOCS-AUTOMATION.md); generated [route inventory](ROUTES.md); local link and doc-impact checker with synthetic tests. CI wiring is deferred. |
+| Verification evidence | 2026-10-19: `npm run docs:links` checked 291 local links in 21 Markdown files with 0 issues; `npm run docs:routes:check` found the generated inventory current; `npm run docs:test` passed 4 synthetic cases, including a tracked target removed from the working tree. `npm run docs:impact -- --base ai-os/phase-7` reported four relevant review prompts from 12 changed path records. `npm run build` checked 38 files with 0 diagnostics and built 12 pages. CI execution is unverified because the workflow has not been changed. |
+| Blockers | The CI doc-impact criterion remains open. The maintainer requested local-only checks for now; workflow changes require explicit approval under `AGENTS.md` §7. |
+| Security findings | The checks use local Git paths and tracked Markdown or Astro page filenames, do not call Burnrate, and do not fetch external links. The impact report prints prompts and counts, not diff contents. |
+| Documentation status | Applicability matrix in [DOCS-AUTOMATION.md](DOCS-AUTOMATION.md); generated route table and local commands documented |
+| Git commit | Local `ai/codex/docs-automation` branch; see `git log -1` after commit |
 
 ### P9: Evaluation and quality
 

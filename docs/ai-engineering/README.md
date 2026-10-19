@@ -38,6 +38,8 @@ The AI Engineering OS is the infrastructure that lets Claude Code and Codex work
 | [`MCP-REGISTRY.md`](MCP-REGISTRY.md) | The MCP servers allowed for CardOS work, per agent: pins, limits, and how to add one. |
 | [`GUARDRAILS.md`](GUARDRAILS.md) | How each risk class is enforced: Claude Code and Codex deny rules and sandboxes, the pre-commit hook, CI, Dependabot, the (unapplied) ruleset, Opengrep and Conftest. |
 | [`model-policy.yaml`](../../model-policy.yaml) | Phase 7 task tiers, Claude/Codex model and effort choices, escalation rules and verification sources. |
+| [`DOCS-AUTOMATION.md`](DOCS-AUTOMATION.md) | Phase 8 generated documentation, link and impact checks, and Not applicable document types. |
+| [`ROUTES.md`](ROUTES.md) | Generated inventory of Astro page routes and source files. |
 
 Phase 7's dry-run checks are `npm run ai:models` for the installed CLIs and `conftest test --policy policy --data policy/data --namespace model_policy model-policy.yaml` for the policy. Neither runs an agent.
 
