@@ -1,0 +1,6 @@
+// Deliberately flawed synthetic example for the agent pilot.
+export function feeLabel(fee: number | null): string {
+  return fee === null ? 'Free' : String(fee);
+}
+
+// Requirement: label missing data Unknown.

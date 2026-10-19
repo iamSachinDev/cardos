@@ -21,7 +21,7 @@ flowchart LR
 - Host and port: `astro.config.mjs:20-21`. `strictPort: true` (`:10`) makes a busy port an error. The `/api` proxy targets `http://127.0.0.1:8000` (`:13-14`).
 - The launcher always runs `astro dev` (`scripts/start-cardos.mjs:133`). The proxy lives under `vite.server`; whether `npm run preview` proxies is unverified.
 - The Burnrate URL and both ports are hardcoded in three places: `astro.config.mjs`, `scripts/start-cardos.mjs:9-10,123,133,149`, `scripts/configure-gmail.mjs:8-10`. Change them together.
-- Locked stack (`package-lock.json`): Astro 7.4, React 19.3, Tailwind 4.3, TypeScript 5.9; `package.json` uses `latest` for most dependencies. No app test or lint script exists; `docs:test` tests the documentation checks, and `npm run check` (`astro check`) is the type check.
+- Locked stack (`package-lock.json`): Astro 7.4, React 19.3, Tailwind 4.3, TypeScript 5.9; `package.json` uses `latest` for most dependencies. `npm test` runs Vitest 5.0.4 over `src/lib`; `docs:test` tests the documentation checks; `npm run check` (`astro check`) is the type check. No lint script exists.
 
 ## Module map
 
@@ -103,7 +103,7 @@ The scripts also call `/api/settings` (`start-cardos.mjs:9`) and `/api/gmail/sta
   2. Reads the Google OAuth client from the downloaded JSON (a `web` client must list the callback URI, `:83`) or prompts for the ID and a hidden secret, then validates both (`:123-124`).
   3. Upserts four keys (client ID, client secret, success and error redirects to `/settings?gmail=…`) with mode 600 (`:97-107,126-131`).
   4. Restarts the Burnrate service (skipped with `CARDOS_NO_RESTART=1`) and polls `/api/gmail/status` for up to 30 s until `configured` is true (`:134-143`).
-- Other npm scripts: `dev` and `start` (`astro dev`), `build` (`astro check`, then `astro build`), `preview`, `check`. All set `ASTRO_TELEMETRY_DISABLED=1`.
+- Other npm scripts: `dev` and `start` (`astro dev`), `build` (`astro check`, then `astro build`), `preview`, `check`, and `test` (Vitest on `src/lib`). Astro scripts set `ASTRO_TELEMETRY_DISABLED=1`.
 - AI engineering scripts: `ai:worktree` creates isolated agent tasks; `ai:models` checks the installed Claude and Codex catalogs; `docs:routes` generates the Astro route inventory, `docs:routes:check` detects stale output, `docs:links` checks local Markdown links, `docs:impact` reports path-based review prompts, and `docs:test` checks the documentation tools. These documentation commands do not read the Burnrate service or its data.
 
 ## External dependency
@@ -114,4 +114,4 @@ Burnrate (FastAPI and SQLite, per the README) is the finance engine, installed t
 
 Burnrate's SQLite database, its `.env.production` (Google OAuth client credentials and the optional `BURNRATE_IGNORE_FILENAME_REGEX`), the statement PDFs and the watch folder. `.gitignore` excludes `.env*`, databases, `*.pdf`, `*.csv` and similar exports.
 
-Last validated: app architecture 2026-10-18 at commit e7598889; documentation tooling 2026-10-19 on this task branch.
+Last validated: app architecture 2026-10-18 at commit e7598889; documentation tooling and local test command 2026-10-19 on this task branch.

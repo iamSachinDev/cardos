@@ -1,0 +1,6 @@
+// Deliberately flawed synthetic example for the agent pilot.
+export function allowedRedirect(rawUrl: string): boolean {
+  return rawUrl.startsWith('https://accounts.google.com');
+}
+
+// Requirement: accept only the exact trusted URL origin.

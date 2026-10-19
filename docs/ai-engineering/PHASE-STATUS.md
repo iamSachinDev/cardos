@@ -8,7 +8,7 @@
 
 > **Rule: a status changes only with recorded evidence.**
 
-Last updated: 2026-10-18 · Base commit: `e7598889` on `main` · Branches: `ai-os/phase-2` → `ai-os/phase-3` → `ai-os/phase-4`, each stacked on the previous one, local and not pushed. `main` has since moved ahead (see [.ai/CURRENT.md](../../.ai/CURRENT.md))
+Last updated: 2026-10-19 · Base commit: `e7598889` on `main` · AI-OS phase branches remain local and stacked; Phase 9 is on `ai/codex/evaluation-quality`, based on the Phase 8 branch. `main` has since moved ahead (see [.ai/CURRENT.md](../../.ai/CURRENT.md))
 
 ## Status vocabulary
 
@@ -37,7 +37,7 @@ This table holds each phase's status and next action. Edit it, and the Phase 2 c
 | [P6](#p6-code-intelligence-and-memory) | Code intelligence and memory | Implemented and verified | P2, P5 | The maintainer decides: accept the 5-day-old Serena pin as an exception, pin Serena in the default Codex config, and accept ADR 0002. |
 | [P7](#p7-model-routing) | Model routing | Implemented and verified | P2 | The maintainer reviews the local `ai-os/phase-7` branch and decides whether to merge or open a PR. |
 | [P8](#p8-docs-automation) | Docs automation | Partially implemented | P2, P5 | Local generation, link checking and doc-impact reporting are ready on `ai/codex/docs-automation`; CI wiring remains deferred. |
-| [P9](#p9-evaluation-and-quality) | Evaluation and quality | Not started | P5 | Choose the `src/lib` test scope for Vitest. |
+| [P9](#p9-evaluation-and-quality) | Evaluation and quality | Partially implemented | P5 | Review local tests and pilot; CI test gate remains deferred. |
 | [P10](#p10-dashboard) | Dashboard | Not started | P2, P5, P9 | Define the status view from this file, Actions and Promptfoo reports. |
 | [P11](#p11-production) | Production | Not started | P5 | Pin the `latest` dependencies; outline the Burnrate DB backup and restore runbook. |
 | [P12](#p12-integration-verification-and-bootstrap) | Integration verification and bootstrap | Not started | P2 to P11 | Start when P2 to P11 are done. |
@@ -249,12 +249,12 @@ Routing in this phase: two writer agents (balanced tier), two independent review
 | Field | Value |
 |---|---|
 | Completion criteria | Vitest covers `src/lib` and runs in CI; CI gates block a failing change; a Promptfoo pilot runs 3 to 5 agent tasks on redacted fixtures and its result is recorded ([roadmap](IMPLEMENTATION-ROADMAP.md#p9-evaluation-and-quality)) |
-| Chunks | Defined when the phase starts |
-| Verification evidence | None yet |
-| Blockers | None recorded |
-| Security findings | None yet. Constraint: fixtures and evals use synthetic or redacted data only, because the repo is public |
-| Documentation status | Not started |
-| Git commit | None |
+| Chunks | Vitest 5.0.4 pinned with `npm test` for all three `src/lib` modules; four-task synthetic Promptfoo/Codex SDK pilot; local [runbook and result](EVALUATION-QUALITY.md). CI wiring remains open. |
+| Verification evidence | 2026-10-19, 19:58 IST: `npm test` passed 11/11 tests in 3 files; `npm run build` checked 41 files with 0 diagnostics and built 12 pages; `osv-scanner scan source --lockfile package-lock.json` found no issues in 393 packages. Promptfoo 0.124.1 / Codex SDK 0.156.1 completed 4/4 exact assertions on synthetic fixtures at 19:57 IST, with no provider errors. An earlier file-reading variant failed and was replaced with inline fixture content; see the [record](EVALUATION-QUALITY.md#pilot-result). |
+| Blockers | CI execution and failure gate are unverified. The maintainer requested local-only checks for now; workflow changes require explicit approval under `AGENTS.md` §7. That file's stale statement that no test command exists also needs explicit agent-rule approval to correct. |
+| Security findings | Tests use mocked fetch; pilot supplied only synthetic snippets to an isolated temporary Git directory with a read-only agent sandbox, agent network and web search disabled, and Promptfoo telemetry disabled. No Burnrate or secret files were supplied. Raw eval report is local in `/private/tmp`, not committed. |
+| Documentation status | Local test and pilot procedure in [EVALUATION-QUALITY.md](EVALUATION-QUALITY.md) |
+| Git commit | Local `ai/codex/evaluation-quality` branch; see `git log -1` after commit |
 
 ### P10: Dashboard
 

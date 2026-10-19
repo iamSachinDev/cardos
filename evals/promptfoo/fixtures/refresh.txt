@@ -1,0 +1,13 @@
+// Deliberately flawed synthetic example for the agent pilot.
+let lastSuccessfulItems = ['sample'];
+
+export async function refresh(load: () => Promise<string[]>): Promise<string[]> {
+  try {
+    lastSuccessfulItems = await load();
+  } catch {
+    lastSuccessfulItems = [];
+  }
+  return lastSuccessfulItems;
+}
+
+// Requirement: a failed refresh must not erase the last successful result.

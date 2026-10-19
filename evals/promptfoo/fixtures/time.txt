@@ -1,0 +1,6 @@
+// Deliberately flawed synthetic example for the agent pilot.
+export function displayDate(isoTimestamp: string): string {
+  return new Date(isoTimestamp).toISOString().slice(0, 10);
+}
+
+// Requirement: show the calendar date in IST (Asia/Kolkata).

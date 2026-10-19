@@ -1,0 +1,43 @@
+# Synthetic-only agent pilot. Set CARDOS_EVAL_WORKDIR to an empty disposable Git workspace.
+description: CardOS Phase 9 synthetic coding-agent pilot
+prompts:
+  - >-
+    Review this synthetic TypeScript and its requirement comment: {{snippet}}
+    Answer {{question}}
+    Reply with exactly one word and no punctuation.
+providers:
+  - id: openai:codex-sdk
+    config:
+      model: gpt-6-luna
+      model_reasoning_effort: low
+      working_dir: '{{ env.CARDOS_EVAL_WORKDIR }}'
+      sandbox_mode: read-only
+      approval_policy: never
+      network_access_enabled: false
+      web_search_enabled: false
+      inherit_process_env: false
+tests:
+  - vars:
+      snippet: file://fixtures/time.txt
+      question: 'What timezone abbreviation is specified in the requirement comment?'
+    assert:
+      - type: equals
+        value: IST
+  - vars:
+      snippet: file://fixtures/fee.txt
+      question: 'What exact label does the requirement comment specify for missing data?'
+    assert:
+      - type: equals
+        value: Unknown
+  - vars:
+      snippet: file://fixtures/auth.txt
+      question: 'Which URL property does the requirement comment say to compare exactly?'
+    assert:
+      - type: equals
+        value: origin
+  - vars:
+      snippet: file://fixtures/refresh.txt
+      question: 'Which variable should the catch block leave unchanged?'
+    assert:
+      - type: equals
+        value: lastSuccessfulItems
