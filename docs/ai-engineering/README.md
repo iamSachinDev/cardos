@@ -32,6 +32,7 @@ The AI Engineering OS is the infrastructure that lets Claude Code and Codex work
 | [`IMPLEMENTATION-ROADMAP.md`](IMPLEMENTATION-ROADMAP.md) | Profile, tool decisions, target architecture, 12-phase plan. |
 | [`PHASE-STATUS.md`](PHASE-STATUS.md) | Status, evidence and next action for every phase. |
 | [`DASHBOARD.md`](DASHBOARD.md) | Phase 10 entry point to phase status, local checks, GitHub Actions and synthetic Promptfoo results. |
+| [`PRODUCTION.md`](PRODUCTION.md) | Phase 11 exact dependency pins, private Burnrate backup and restore runbook, and Not applicable production practices. |
 | [`.specify/memory/constitution.md`](../../.specify/memory/constitution.md) | Spec Kit constitution: the project's durable principles (proposed, pending the maintainer's ratification). |
 | [`specs/001-gmail-sync/spec.md`](../../specs/001-gmail-sync/spec.md) | Retroactive spec of Gmail statement sync, with requirement IDs and traceability (draft). |
 | [`.ai/runbooks/handoff.md`](../../.ai/runbooks/handoff.md) | How to start, hand off, resume and finish an agent task. |

@@ -26,6 +26,7 @@ Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **C
 | [`docs/ai-engineering/MCP-REGISTRY.md`](../docs/ai-engineering/MCP-REGISTRY.md) | The MCP servers allowed per agent: pins, limits, how to add one | WARM | maintainer | 2026-10-18 |
 | [`docs/ai-engineering/PHASE-STATUS.md`](../docs/ai-engineering/PHASE-STATUS.md) | Status of each phase | WARM | maintainer | — |
 | [`docs/ai-engineering/DASHBOARD.md`](../docs/ai-engineering/DASHBOARD.md) | Phase 10 local status view: phase evidence, Actions link, Promptfoo report, telemetry decision | WARM | maintainer | 2026-10-19 |
+| [`docs/ai-engineering/PRODUCTION.md`](../docs/ai-engineering/PRODUCTION.md) | Phase 11 exact dependency pins, Burnrate backup and restore procedure, and Not applicable practices | WARM | maintainer | 2026-10-20 |
 | [`docs/ai-engineering/DOCS-AUTOMATION.md`](../docs/ai-engineering/DOCS-AUTOMATION.md) | Phase 8 generated and checked docs; Not applicable types | WARM | maintainer | 2026-10-19 |
 | [`docs/ai-engineering/EVALUATION-QUALITY.md`](../docs/ai-engineering/EVALUATION-QUALITY.md) | Phase 9 local Vitest and synthetic Promptfoo pilot procedure and result | WARM | maintainer | 2026-10-19 |
 | [`docs/ai-engineering/ROUTES.md`](../docs/ai-engineering/ROUTES.md) | Generated Astro route inventory | WARM | maintainer | 2026-10-19 |
@@ -40,7 +41,7 @@ Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **C
 `—` means no date is recorded here yet (a document's own header may carry one). `partial` means the README's Google-side claims were not checked. Known README gaps, left for the maintainer:
 
 - It does not mention `burnrate-password-reparse-preserve.patch`. Its only re-apply command (`patch -p0 …`) is for `burnrate-0.5.2.patch`; the second patch uses `a/` and `b/` prefixes, so applying it would need `-p1` (unverified). See [ADR 0001](decisions/0001-local-burnrate-patch.md).
-- Its "Node.js 20+" is out of date: the locked `astro` and `@astrojs/react` require Node.js >=22.22.0.
+- The Phase 11 branch corrects its Node.js requirement to 22.22.0 or newer; earlier branches and `main` may still show "Node.js 20+" until merged.
 
 ## How to retrieve
 

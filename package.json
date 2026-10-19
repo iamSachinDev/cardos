@@ -23,19 +23,19 @@
     "check": "ASTRO_TELEMETRY_DISABLED=1 astro check"
   },
   "dependencies": {
-    "@astrojs/react": "latest",
-    "@tailwindcss/vite": "latest",
-    "astro": "latest",
-    "lucide-react": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "tailwindcss": "latest"
+    "@astrojs/react": "7.1.0",
+    "@tailwindcss/vite": "4.3.3",
+    "astro": "7.4.0",
+    "lucide-react": "1.58.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "tailwindcss": "4.3.3"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.10",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "typescript": "^5.9.2",
+    "@astrojs/check": "0.9.10",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "typescript": "5.9.3",
     "vitest": "5.0.4"
   }
 }

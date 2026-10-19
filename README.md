@@ -16,7 +16,7 @@ A premium local-first Astro frontend for **Burnrate**. Burnrate remains the fina
 ## Requirements
 
 - Existing Homebrew Burnrate installation (`pratik1235/burnrate/burnrate`)
-- Node.js 20+ and project dependencies (`npm ci` once)
+- Node.js 22.22.0 or newer and project dependencies (`npm ci` once)
 
 ## Run
 

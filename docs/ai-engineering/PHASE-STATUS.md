@@ -8,7 +8,7 @@
 
 > **Rule: a status changes only with recorded evidence.**
 
-Last updated: 2026-10-19 · Base commit: `e7598889` on `main` · AI-OS phase branches remain local and stacked; Phase 10 is on `ai/codex/dashboard`, based on the Phase 9 branch. `main` has since moved ahead (see [.ai/CURRENT.md](../../.ai/CURRENT.md))
+Last updated: 2026-10-20 · Base commit: `e7598889` on `main` · AI-OS phase branches remain local and stacked; Phase 11 is on `ai/codex/production`, based on the Phase 10 branch. `main` has since moved ahead (see [.ai/CURRENT.md](../../.ai/CURRENT.md))
 
 ## Status vocabulary
 
@@ -39,7 +39,7 @@ This table holds each phase's status and next action. Edit it, and the Phase 2 c
 | [P8](#p8-docs-automation) | Docs automation | Partially implemented | P2, P5 | Local generation, link checking and doc-impact reporting are ready on `ai/codex/docs-automation`; CI wiring remains deferred. |
 | [P9](#p9-evaluation-and-quality) | Evaluation and quality | Partially implemented | P5 | Review local tests and pilot; CI test gate remains deferred. |
 | [P10](#p10-dashboard) | Dashboard | Partially implemented | P2, P5, P9 | Review the local [status view](DASHBOARD.md); verify Actions checks only after a published run. |
-| [P11](#p11-production) | Production | Not started | P5 | Pin the `latest` dependencies; outline the Burnrate DB backup and restore runbook. |
+| [P11](#p11-production) | Production | Implemented and verified | P5 | Review the local branch; the maintainer rehearses backup and restore privately before relying on it. |
 | [P12](#p12-integration-verification-and-bootstrap) | Integration verification and bootstrap | Not started | P2 to P11 | Start when P2 to P11 are done. |
 
 ## Phase details
@@ -273,12 +273,12 @@ Routing in this phase: two writer agents (balanced tier), two independent review
 | Field | Value |
 |---|---|
 | Completion criteria | Runtime dependencies pinned instead of `latest`; a runbook for backing up and restoring the Burnrate database. Not applicable: deployment, infrastructure, rollouts, signing, load and chaos testing, service catalog (nothing is deployed) ([roadmap](IMPLEMENTATION-ROADMAP.md#p11-production)) |
-| Chunks | Defined when the phase starts |
-| Verification evidence | None yet |
-| Blockers | None recorded |
-| Security findings | None yet. Constraints: backups contain financial data and must stay out of git; `latest` ranges accept any new release until they are pinned |
-| Documentation status | Not started |
-| Git commit | None |
+| Chunks | Exact versions for all 12 direct dependencies, matching the lockfile's resolved versions; Node.js requirement corrected; [PRODUCTION.md](PRODUCTION.md) documents a stopped-service snapshot, validation, guarded restore, and the Not applicable practices. |
+| Verification evidence | 2026-10-20, 03:02 IST: direct versions checked against the lockfile root and resolved packages; `npm ls --depth=0 --json` found all 12 installed with no problems; `npm test` passed 11/11 tests; `npm run build` checked 41 Astro files with 0 diagnostics and built 12 pages; `npm run docs:links` checked 332 local links in 27 Markdown files with 0 issues; `npm run docs:routes:check` passed; `osv-scanner scan source --lockfile package-lock.json` scanned 393 packages and found no issues. The four runbook shell blocks pass `bash -n`. The runbook was reviewed against installed Burnrate 0.5.2 source and SQLite/Homebrew documentation; an independent reviewer found fail-safe/configuration issues, corrected before commit. Final gates are recorded in the task file. |
+| Blockers | None for the documented Phase 11 deliverables. The live backup and restore procedure has not been executed or rehearsed; only the maintainer can validate it with private financial data. |
+| Security findings | No live Burnrate data, env file, key, statement, or API response was accessed. The runbook requires an encrypted private destination, exact SQLite `ok` validation, a complete-data marker, service stop before file copies, rollback on restore copy failure, and configuration/key restoration before service start. No new dependency version was introduced. |
+| Documentation status | [PRODUCTION.md](PRODUCTION.md), README, `.ai/` map and current context updated; CI and agent-rule files unchanged. |
+| Git commit | Local `ai/codex/production` branch; see `git log -1` after commit |
 
 ### P12: Integration verification and bootstrap
 

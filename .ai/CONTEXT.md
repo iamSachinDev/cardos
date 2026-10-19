@@ -21,7 +21,7 @@ flowchart LR
 - Host and port: `astro.config.mjs:20-21`. `strictPort: true` (`:10`) makes a busy port an error. The `/api` proxy targets `http://127.0.0.1:8000` (`:13-14`).
 - The launcher always runs `astro dev` (`scripts/start-cardos.mjs:133`). The proxy lives under `vite.server`; whether `npm run preview` proxies is unverified.
 - The Burnrate URL and both ports are hardcoded in three places: `astro.config.mjs`, `scripts/start-cardos.mjs:9-10,123,133,149`, `scripts/configure-gmail.mjs:8-10`. Change them together.
-- Locked stack (`package-lock.json`): Astro 7.4, React 19.3, Tailwind 4.3, TypeScript 5.9; `package.json` uses `latest` for most dependencies. `npm test` runs Vitest 5.0.4 over `src/lib`; `docs:test` tests the documentation checks; `npm run check` (`astro check`) is the type check. No lint script exists.
+- Locked stack (`package-lock.json`): Astro 7.4, React 19.3, Tailwind 4.3, TypeScript 5.9; the Phase 11 branch pins all direct dependencies to these resolved versions. `npm test` runs Vitest 5.0.4 over `src/lib`; `docs:test` tests the documentation checks; `npm run check` (`astro check`) is the type check. No lint script exists.
 
 ## Module map
 
@@ -114,4 +114,4 @@ Burnrate (FastAPI and SQLite, per the README) is the finance engine, installed t
 
 Burnrate's SQLite database, its `.env.production` (Google OAuth client credentials and the optional `BURNRATE_IGNORE_FILENAME_REGEX`), the statement PDFs and the watch folder. `.gitignore` excludes `.env*`, databases, `*.pdf`, `*.csv` and similar exports.
 
-Last validated: app architecture 2026-10-18 at commit e7598889; documentation tooling and local test command 2026-10-19 on this task branch.
+Last validated: app architecture 2026-10-18 at commit e7598889; documentation tooling and local test command 2026-10-19; direct dependency pins 2026-10-20 on the Phase 11 branch.
