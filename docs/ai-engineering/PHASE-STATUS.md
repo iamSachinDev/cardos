@@ -3,12 +3,12 @@
 - **Purpose:** The live record of where each phase of the AI Engineering OS stands, and the evidence behind each status.
 - **Audience:** The maintainer and the coding agents (Claude Code, Codex).
 - **Owner:** The maintainer.
-- **Related docs:** [README](README.md) · [IMPLEMENTATION-ROADMAP.md](IMPLEMENTATION-ROADMAP.md) (plan, criteria, architecture) · [.ai/CURRENT.md](../../.ai/CURRENT.md) (session summary)
+- **Related docs:** [README](README.md) · [DASHBOARD.md](DASHBOARD.md) (status and result links) · [IMPLEMENTATION-ROADMAP.md](IMPLEMENTATION-ROADMAP.md) (plan, criteria, architecture) · [.ai/CURRENT.md](../../.ai/CURRENT.md) (session summary)
 - **How to validate:** Every status other than Not started has evidence in its phase section: what was run or inspected, when, and the result. The board and the Phase 2 chunk table agree with the sections. Links resolve.
 
 > **Rule: a status changes only with recorded evidence.**
 
-Last updated: 2026-10-19 · Base commit: `e7598889` on `main` · AI-OS phase branches remain local and stacked; Phase 9 is on `ai/codex/evaluation-quality`, based on the Phase 8 branch. `main` has since moved ahead (see [.ai/CURRENT.md](../../.ai/CURRENT.md))
+Last updated: 2026-10-19 · Base commit: `e7598889` on `main` · AI-OS phase branches remain local and stacked; Phase 10 is on `ai/codex/dashboard`, based on the Phase 9 branch. `main` has since moved ahead (see [.ai/CURRENT.md](../../.ai/CURRENT.md))
 
 ## Status vocabulary
 
@@ -38,7 +38,7 @@ This table holds each phase's status and next action. Edit it, and the Phase 2 c
 | [P7](#p7-model-routing) | Model routing | Implemented and verified | P2 | The maintainer reviews the local `ai-os/phase-7` branch and decides whether to merge or open a PR. |
 | [P8](#p8-docs-automation) | Docs automation | Partially implemented | P2, P5 | Local generation, link checking and doc-impact reporting are ready on `ai/codex/docs-automation`; CI wiring remains deferred. |
 | [P9](#p9-evaluation-and-quality) | Evaluation and quality | Partially implemented | P5 | Review local tests and pilot; CI test gate remains deferred. |
-| [P10](#p10-dashboard) | Dashboard | Not started | P2, P5, P9 | Define the status view from this file, Actions and Promptfoo reports. |
+| [P10](#p10-dashboard) | Dashboard | Partially implemented | P2, P5, P9 | Review the local [status view](DASHBOARD.md); verify Actions checks only after a published run. |
 | [P11](#p11-production) | Production | Not started | P5 | Pin the `latest` dependencies; outline the Burnrate DB backup and restore runbook. |
 | [P12](#p12-integration-verification-and-bootstrap) | Integration verification and bootstrap | Not started | P2 to P11 | Start when P2 to P11 are done. |
 
@@ -261,12 +261,12 @@ Routing in this phase: two writer agents (balanced tier), two independent review
 | Field | Value |
 |---|---|
 | Completion criteria | Phase status, check results and eval results can be viewed from this file, GitHub Actions and Promptfoo reports without a new service; the telemetry stack stays Deferred until a real telemetry source exists ([roadmap](IMPLEMENTATION-ROADMAP.md#p10-dashboard)) |
-| Chunks | Defined when the phase starts |
-| Verification evidence | None yet. Check first: native OpenTelemetry export from both CLIs (unverified) |
-| Blockers | None recorded |
-| Security findings | None yet. Constraint: reports must not contain real data |
-| Documentation status | Not started |
-| Git commit | None |
+| Chunks | Local [dashboard](DASHBOARD.md) links the phase board, dated local check evidence, existing GitHub Actions workflow/page, and the synthetic Promptfoo pilot result. Native telemetry capability checked; no service added. |
+| Verification evidence | 2026-10-19: existing CI workflow inspected: build, gitleaks, osv-scanner, policy; `npm test` and doc-impact checks are not wired. Phase 9's 11/11 tests and 4/4 synthetic Promptfoo result have dated evidence. Installed Claude Code 2.1.245 and Codex CLI 0.163.0 were checked against their official OpenTelemetry docs; no live export was run. At 20:59 IST, `npm run docs:links` checked 323 local links with 0 issues; `npm run docs:routes:check` found the route inventory current; `npm run docs:test` passed 4/4 synthetic cases; `npm run build` checked 41 files with 0 diagnostics and built 12 pages. |
+| Blockers | This branch is local and has no recorded GitHub Actions run. Remote check results cannot be verified until publication; CI edits remain deferred under the maintainer's local-only instruction and `AGENTS.md` §7. |
+| Security findings | The dashboard links to aggregate synthetic results only. It does not commit raw Promptfoo output, enable telemetry, contact Burnrate, or run a collector. Native telemetry can include identity attributes or tool output, so the stack stays Deferred. |
+| Documentation status | [DASHBOARD.md](DASHBOARD.md) is the status entry point and records source links, freshness and limits. |
+| Git commit | Local `ai/codex/dashboard` branch; see `git log -1` after commit |
 
 ### P11: Production
 

@@ -25,6 +25,7 @@ Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **C
 | [`docs/ai-engineering/GUARDRAILS.md`](../docs/ai-engineering/GUARDRAILS.md) | How each risk class is enforced: deny rules, sandboxes, hook, CI, policies | WARM | maintainer | 2026-10-18 |
 | [`docs/ai-engineering/MCP-REGISTRY.md`](../docs/ai-engineering/MCP-REGISTRY.md) | The MCP servers allowed per agent: pins, limits, how to add one | WARM | maintainer | 2026-10-18 |
 | [`docs/ai-engineering/PHASE-STATUS.md`](../docs/ai-engineering/PHASE-STATUS.md) | Status of each phase | WARM | maintainer | — |
+| [`docs/ai-engineering/DASHBOARD.md`](../docs/ai-engineering/DASHBOARD.md) | Phase 10 local status view: phase evidence, Actions link, Promptfoo report, telemetry decision | WARM | maintainer | 2026-10-19 |
 | [`docs/ai-engineering/DOCS-AUTOMATION.md`](../docs/ai-engineering/DOCS-AUTOMATION.md) | Phase 8 generated and checked docs; Not applicable types | WARM | maintainer | 2026-10-19 |
 | [`docs/ai-engineering/EVALUATION-QUALITY.md`](../docs/ai-engineering/EVALUATION-QUALITY.md) | Phase 9 local Vitest and synthetic Promptfoo pilot procedure and result | WARM | maintainer | 2026-10-19 |
 | [`docs/ai-engineering/ROUTES.md`](../docs/ai-engineering/ROUTES.md) | Generated Astro route inventory | WARM | maintainer | 2026-10-19 |

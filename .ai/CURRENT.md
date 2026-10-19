@@ -12,10 +12,10 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 
 | Field | Value |
 |---|---|
-| Phase | 9: Evaluation and quality, partially implemented ([status](../docs/ai-engineering/PHASE-STATUS.md#p9-evaluation-and-quality)); local tests and synthetic agent pilot are ready, CI wiring is deferred. Phase 8 and Phase 5 are partially implemented; Phase 7, Phase 6 and phases 2 to 4 are implemented and verified. |
-| Chunk | Vitest tests for `src/lib` and a four-case Promptfoo pilot on synthetic fixtures |
-| Branches / worktree | `ai/codex/evaluation-quality` in `../cardos-wt/codex-evaluation-quality`, based on `ai/codex/docs-automation` in `../cardos-wt/codex-docs-automation`; earlier phases are stacked from `main` at `e7598889`. None of these branches is merged or pushed. This clone has `core.hooksPath=.githooks` set |
-| Owner | Codex owns the Phase 9 task branch and its [task file](tasks/evaluation-quality.md); the maintainer reviews before merge or publication. |
+| Phase | 10: Dashboard, partially implemented ([status](../docs/ai-engineering/PHASE-STATUS.md#p10-dashboard)); the local status view is ready, remote Actions evidence is unavailable for this local branch. Phases 9, 8 and 5 remain partially implemented; phases 2 to 4, 6 and 7 are implemented and verified. |
+| Chunk | Local [dashboard](../docs/ai-engineering/DASHBOARD.md) linking phase evidence, checks, GitHub Actions and the synthetic Promptfoo pilot; native telemetry capability check |
+| Branches / worktree | `ai/codex/dashboard` in `../cardos-wt/codex-dashboard`, based on `ai/codex/evaluation-quality` in `../cardos-wt/codex-evaluation-quality`; earlier phases are stacked from `main` at `e7598889`. None of these branches is merged or pushed. This clone has `core.hooksPath=.githooks` set |
+| Owner | Codex owns the Phase 10 task branch and its [task file](tasks/dashboard.md); the maintainer reviews before merge or publication. |
 | Main checkout | `../cardos` on `main`: the maintainer and Codex work there. `main` has moved ahead of the AI-OS base (`git log --oneline e7598889..main`; see known problem 6); none of those commits touch AI-OS files. Don't edit it from these branches |
 | Specification | [`specs/001-gmail-sync/spec.md`](../specs/001-gmail-sync/spec.md): Draft (retroactive), pending the maintainer's acceptance. Constitution [`.specify/memory/constitution.md`](../.specify/memory/constitution.md) v1.0.0: Proposed, pending ratification |
 | Last updated | 2026-10-19 |
@@ -32,6 +32,7 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 
 - **Phase 6** (`ai-os/phase-6`): Serena 2.0.0 pinned and read-only for both agents (`.mcp.json`, `.serena/project.yml`, the Codex `cardos` profile), the [MCP registry](../docs/ai-engineering/MCP-REGISTRY.md), [lifecycle rules](LIFECYCLE.md) and [ADR 0002](decisions/0002-agent-memory.md) (ai-memory: DEFER, Proposed).
 - **Phase 9 local chunk** (`ai/codex/evaluation-quality`): `npm test` passes 11 unit tests across `src/lib`; a four-task Promptfoo/Codex SDK pilot passes on synthetic snippets. Reproduction and limits are in [EVALUATION-QUALITY.md](../docs/ai-engineering/EVALUATION-QUALITY.md). CI wiring is deferred.
+- **Phase 10 local chunk** (`ai/codex/dashboard`): [DASHBOARD.md](../docs/ai-engineering/DASHBOARD.md) gathers status, local check evidence, Actions navigation and the synthetic Promptfoo result. Both installed CLIs document OpenTelemetry export; no collector or live export was enabled. Remote Actions evidence remains open.
 
 ## Checks (details and dates in PHASE-STATUS)
 
@@ -71,5 +72,6 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 4. Phase 7 model routing is implemented on `ai-os/phase-7`: policy, CLI capability catalog, dry-run checker, Conftest rules and fixtures. Local checks pass (see Phase 7 status). The maintainer reviews the local branch before merge or publication.
 5. Phase 8 local docs checks are on `ai/codex/docs-automation`. The route inventory, link checker and advisory impact command work locally. CI wiring remains deferred.
 6. Phase 9 local checks are on `ai/codex/evaluation-quality`. Review the tests, pilot and dependency; the CI test gate remains deferred under the maintainer's local-only instruction.
+7. Phase 10 local status view is on `ai/codex/dashboard`. Review it; verify the Actions check view after publication, if the maintainer later authorizes that step. Keep telemetry deferred until a privacy-reviewed source and destination exist.
 
 Relevant completed commit: `c0b036a4` on `ai-os/phase-7`.

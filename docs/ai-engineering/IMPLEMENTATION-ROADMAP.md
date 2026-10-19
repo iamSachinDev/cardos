@@ -114,7 +114,7 @@ Verdicts are decisions about tools. They are separate from the work statuses in 
 | Model and effort | Premium model at high effort for every task | Premium model at high effort for every task | Routing by task tier arrives in Phase 7 |
 | Project-level config | `.claude/settings.json` | A repo's `.codex/config.toml` is not loaded in an untrusted project (tested in Phase 4); `AGENTS.md` is | Shared rules live in `AGENTS.md`; whether a trusted project loads `.codex/config.toml` is unverified |
 | Shell sandbox on macOS | Settings-level Bash sandbox (Seatbelt); it turns `Read` deny rules into OS-level read denies (tested in Phase 5) | Permission profiles with filesystem `deny` globs, enforced by Seatbelt (tested in Phase 5) | Both used: [GUARDRAILS.md](GUARDRAILS.md) |
-| Native OpenTelemetry export | Unverified | Unverified | Check in Phase 10 |
+| Native OpenTelemetry export | Documented for installed Claude Code 2.1.245 ([monitoring](https://code.claude.com/docs/en/monitoring-usage)) | Documented for installed Codex CLI 0.163.0 ([observability](https://learn.chatgpt.com/docs/config-file/config-advanced#observability-and-telemetry)) | Capability checked in Phase 10; this phase configured no collector and tested no export. Keep the telemetry stack Deferred. |
 
 ## 5. Target architecture
 
@@ -326,7 +326,8 @@ Nothing is merged while a phase is in progress, so rollback is cheap. These are 
 | Item | Check in |
 |---|---|
 | Whether Codex loads a repo's `.codex/config.toml` in a trusted project (the untrusted case was answered in Phase 4) | Phase 5, only if repo-level Codex settings are needed |
-| Native OpenTelemetry export from both CLIs | Phase 10 |
+
+Phase 10 checked the installed CLI versions and official export documentation on 2026-10-19. Native export is supported, but no live export or privacy-reviewed collector exists; see [DASHBOARD.md](DASHBOARD.md#telemetry-decision).
 
 **Open decisions for the maintainer.**
 
