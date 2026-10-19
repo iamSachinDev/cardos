@@ -20,15 +20,15 @@ export default function Dashboard(){
   const categories=cats.breakdown || cats.byCurrency?.[0]?.breakdown || [];
   const dueTotal=dues.reduce((a,b)=>a+(b.totalAmountDue||0),0);
   const breakdown=new Map((summary?.cardBreakdown||[]).map(x=>[`${x.bank}:${x.last4}`,x]));
-  if (!summary && connection.state === 'offline') return <div className="card offline-card"><div className="section-title">Burnrate temporarily unavailable</div><p className="muted">Retrying the local connection automatically…</p></div>;
+  if (!summary && connection.state === 'offline') return <div className="card offline-card"><div className="section-title">ST Finance temporarily unavailable</div><p className="muted">Retrying the local connection automatically…</p></div>;
   if (!summary) return <div className="grid grid-4">{[1,2,3,4].map(x=><div className="card" key={x}><div className="loading"/><div className="loading" style={{marginTop:18,width:'70%'}}/></div>)}</div>;
   const next=dues[0];
   return <>
-    <section className="hero card"><div className="hero-copy"><span className="eyebrow">Next 30 days</span><div className="hero-label">Upcoming payments</div><div className="hero-amount">{formatCurrency(dueTotal)}</div><div className="hero-meta">{dues.length} payment{dues.length===1?'':'s'} ahead · From your Burnrate data</div></div><div className="hero-next"><div className="metric-label">Next payment</div>{next?<><strong>{bankLabel(next.bank)} ··{next.cardLast4}</strong><div className="hero-next-amount">{formatCurrency(next.totalAmountDue,next.currency||'INR')}</div><div className="muted">Due {formatDate(next.dueDate)}</div></>:<div className="muted">Nothing due is currently recorded.</div>}</div></section>
+    <section className="hero card"><div className="hero-copy"><span className="eyebrow">Next 30 days</span><div className="hero-label">Upcoming payments</div><div className="hero-amount">{formatCurrency(dueTotal)}</div><div className="hero-meta">{dues.length} payment{dues.length===1?'':'s'} ahead · From your local data</div></div><div className="hero-next"><div className="metric-label">Next payment</div>{next?<><strong>{bankLabel(next.bank)} ··{next.cardLast4}</strong><div className="hero-next-amount">{formatCurrency(next.totalAmountDue,next.currency||'INR')}</div><div className="muted">Due {formatDate(next.dueDate)}</div></>:<div className="muted">Nothing due is currently recorded.</div>}</div></section>
     <div className="grid grid-4">
       <div className="card"><div className="metric-label">Total spend</div><div className="metric-value">{formatCurrency(summary?.totalSpend)}</div><div className="metric-sub">All imported statements</div></div>
-      <div className="card"><div className="metric-label">Transactions</div><div className="metric-value">{(txState.data as any)?.total ?? txState.data?.transactions?.length ?? 0}</div><div className="metric-sub">Imported from Burnrate</div></div>
-      <div className="card"><div className="metric-label">Avg monthly spend</div><div className="metric-value">{formatCurrency(summary?.avgMonthlySpend)}</div><div className="metric-sub">Burnrate calculated</div></div>
+      <div className="card"><div className="metric-label">Transactions</div><div className="metric-value">{(txState.data as any)?.total ?? txState.data?.transactions?.length ?? 0}</div><div className="metric-sub">Imported from statements</div></div>
+      <div className="card"><div className="metric-label">Avg monthly spend</div><div className="metric-value">{formatCurrency(summary?.avgMonthlySpend)}</div><div className="metric-sub">Calculated from history</div></div>
       <div className="card"><div className="metric-label">Cards · Statements</div><div className="metric-value">{cards.length} <span className="muted" style={{fontSize:16}}>· {statementCount}</span></div><div className="metric-sub">Private · local-only data</div></div>
     </div>
 

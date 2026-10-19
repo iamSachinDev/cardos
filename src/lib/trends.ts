@@ -10,7 +10,7 @@ export type MonthTrendPoint = {
   labelShort: string;        // e.g. "May '26"
   labelFull: string;         // e.g. "May 2026"
   spend: number;             // spend amount or 0
-  hasData: boolean;          // true if recorded in Burnrate
+  hasData: boolean;          // true if recorded in ST Finance
   changeMoM: number | null;  // percentage change vs previous month with data
   isPeak: boolean;
   isLowest: boolean;

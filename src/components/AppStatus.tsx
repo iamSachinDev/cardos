@@ -4,7 +4,7 @@ import { formatDateTime } from '../lib/api';
 import { endpoints, refreshAll, startLiveSync, useConnection, useLiveData } from '../lib/live';
 import { gmailNeedsReconnect, syncGmail, type GmailStatus } from '../lib/gmail';
 
-export default function BurnrateStatus() {
+export default function AppStatus() {
   const connection = useConnection();
   const gmailState = useLiveData<GmailStatus>(endpoints.gmail);
   const gmail = gmailState.data;
@@ -38,7 +38,7 @@ export default function BurnrateStatus() {
         <span className="status-dot" aria-hidden="true" />
         <span><strong>Local data · {localState}</strong><small>{lastChecked ? <>Last data check <time dateTime={lastChecked}>{formatDateTime(lastChecked)}</time></> : 'Waiting for first data check'}</small></span>
       </div>
-      <button className="sync-button" type="button" onClick={() => void refreshAll('manual')} disabled={connection.state === 'refreshing'} aria-label="Refresh local CardOS data">
+      <button className="sync-button" type="button" onClick={() => void refreshAll('manual')} disabled={connection.state === 'refreshing'} aria-label="Refresh ST Finance data">
         <RefreshCw size={15} aria-hidden="true" /> <span>Refresh data</span>
       </button>
     </div>

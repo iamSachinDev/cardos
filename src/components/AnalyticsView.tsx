@@ -33,7 +33,7 @@ export default function AnalyticsView() {
 
   if (!summary) {
     return summaryState.error ? (
-      <div className="card">Burnrate temporarily unavailable. Retrying…</div>
+      <div className="card">ST Finance temporarily unavailable. Retrying…</div>
     ) : (
       <div className="grid grid-3">
         {[1, 2, 3].map(item => (

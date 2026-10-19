@@ -157,7 +157,7 @@ export function useConnection(): Connection {
 
 export class ApiMutationError extends Error {
   constructor(public status: number, public detail?: string) {
-    super('Burnrate could not complete that action.');
+    super('ST Finance could not complete that action.');
   }
 }
 
@@ -173,7 +173,7 @@ export async function apiMutate(path: string, method: 'POST' | 'PATCH' | 'PUT' |
       headers: { Accept: 'application/json', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
-  } catch { throw new Error('Burnrate could not complete that action.'); }
+  } catch { throw new Error('ST Finance could not complete that action.'); }
   finally { clearTimeout(timeout); }
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null) as { detail?: unknown } | null;

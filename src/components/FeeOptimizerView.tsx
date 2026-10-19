@@ -52,7 +52,7 @@ function PersonalFeeEditor({ card }: { card: Card }) {
 export default function FeeOptimizerView() {
   const cardsState = useLiveData<Card[]>(endpoints.cards);
   const milestoneState = useLiveQuery<{milestones:Milestone[]}>('/api/milestones');
-  if (!cardsState.data) return <div className="card">{cardsState.error ? 'Burnrate temporarily unavailable. Retrying…' : <div className="loading"/>}</div>;
+  if (!cardsState.data) return <div className="card">{cardsState.error ? 'ST Finance temporarily unavailable. Retrying…' : <div className="loading"/>}</div>;
   if (!milestoneState.data) return <div className="card">{milestoneState.error ? 'Waiver milestones are temporarily unavailable. Retrying…' : <div className="loading"/>}</div>;
   const milestones = milestoneState.data?.milestones || [];
   return <><section className="card fee-intro"><div className="eyebrow">Annual fee status</div><h2>Your fee needs confirmation</h2><p className="muted">Issuer prices are reference rates, not proof of what your card costs. SBI cards can have individual fee-free or waived offers. Record a personal fee only after checking your card account or written terms.</p></section>

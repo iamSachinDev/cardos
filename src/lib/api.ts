@@ -9,10 +9,10 @@ export async function apiGet<T>(path: string): Promise<T> {
   const timeout = setTimeout(() => controller.abort(), 8000);
   try {
     const res = await fetch(path, { headers: { Accept: 'application/json' }, cache: 'no-store', signal: controller.signal });
-    if (!res.ok) throw new Error('Burnrate temporarily unavailable');
+    if (!res.ok) throw new Error('ST Finance temporarily unavailable');
     return res.json() as Promise<T>;
   } catch {
-    throw new Error('Burnrate temporarily unavailable');
+    throw new Error('ST Finance temporarily unavailable');
   } finally { clearTimeout(timeout); }
 }
 
@@ -30,7 +30,7 @@ const dateTimeFormatter = new Intl.DateTimeFormat('en-IN', { timeZone: IST_TIME_
 const isoDateFormatter = new Intl.DateTimeFormat('en-GB', { timeZone: IST_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' });
 
 function parseIstDate(value: string) {
-  // Calendar dates are billing dates, not instants. Burnrate stores timestamp
+  // Calendar dates are billing dates, not instants. The backend stores timestamp
   // columns with datetime.utcnow() and serializes them without a UTC suffix.
   const normalized = calendarDate.test(value) ? `${value}T00:00:00+05:30`
     : naiveDateTime.test(value) ? `${value.replace(' ', 'T')}Z` : value;
