@@ -41,7 +41,7 @@ async function envFilePath(brew) {
   try {
     prefix = await run(brew, ['--prefix', '--installed', formula]);
   } catch {
-    throw new Error('Homebrew is unavailable, so the Burnrate installation could not be located.');
+    throw new Error('Homebrew is unavailable, so the finance backend installation could not be located.');
   }
   if (prefix.code !== 0 || !prefix.output) throw new Error(`The existing ${formula} installation was not found.`);
   return join(prefix.output, 'libexec', '.env.production');
@@ -116,7 +116,7 @@ async function gmailConfigured() {
 }
 
 async function main() {
-  console.log('\nCardOS · Gmail sync setup\n');
+  console.log('\nST Finance · Gmail sync setup\n');
   const brew = findBrew();
   const path = await envFilePath(brew);
   const client = await readClient();
@@ -132,14 +132,14 @@ async function main() {
   console.log(`✓ Gmail OAuth client saved to ${path}`);
 
   if (process.env.CARDOS_NO_RESTART === '1') return;
-  console.log('Restarting the Burnrate Homebrew service…');
+  console.log('Restarting the finance backend Homebrew service…');
   const restarted = await run(brew, ['services', 'restart', formula]);
   const deadline = Date.now() + 30000;
   while (Date.now() < deadline && !(await gmailConfigured())) await sleep(750);
   if (!(await gmailConfigured())) {
-    throw new Error(`Burnrate did not report Gmail as configured at ${statusUrl}. ${restarted.output || 'Check the Homebrew Burnrate service logs.'}`);
+    throw new Error(`Finance backend did not report Gmail as configured at ${statusUrl}. ${restarted.output || 'Check the Homebrew service logs.'}`);
   }
-  console.log('✓ Burnrate reports Gmail as configured');
+  console.log('✓ Finance backend reports Gmail as configured');
   console.log(`\nOpen ${settingsUrl} and choose Connect Gmail.`);
 }
 
