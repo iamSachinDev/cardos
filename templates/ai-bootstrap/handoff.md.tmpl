@@ -1,0 +1,9 @@
+# Agent handoff
+
+1. Start from a clean Git checkout. Create a task branch and separate worktree with `git worktree add` using the repository's approved base branch.
+2. Record the task owner, branch, scope and next step in `.ai/CURRENT.md` or a task file.
+3. Before editing, check `git status`. If another person's changes are present, stop and coordinate.
+4. Stage only your own explicit paths; inspect the staged diff and run the verified checks in `AGENTS.md`.
+5. Commit locally. Do not push or merge without authorization. Hand off the branch name, commit, checks and remaining risks.
+
+Never put credentials, private records or raw tool transcripts into the handoff.

@@ -296,7 +296,7 @@ Approvals: under [`AGENTS.md` §7](../../AGENTS.md#7-risk-classes-and-approvals)
 - **No unreviewed installers.** No `curl | sh`. Pin versions. Tools come from `uv tool` or Homebrew.
 - **Data-capturing tools are deferred or rejected.** ai-memory's default hooks capture prompts and tool calls (DEFER). graphify sends non-code docs to any API key it finds (DEFER). CodeGraph ships PostHog telemetry (REJECT). OmniRoute routes prompts to third-party providers (REJECT).
 - **The Burnrate patch is HIGH risk.** See [ADR 0001](../../.ai/decisions/0001-local-burnrate-patch.md) and [`AGENTS.md` §7](../../AGENTS.md#7-risk-classes-and-approvals).
-- **Supply chain.** Runtime dependencies are declared as `latest`, so a fresh install can pull a new release. The lockfile pins what is installed today. osv-scanner (Phase 5) watches the lockfile, and Phase 11 pins the declarations.
+- **Supply chain.** Phase 1 found runtime dependencies declared as `latest`; Phase 11 now pins all direct declarations to the lockfile's resolved versions on the local AI-OS branch. osv-scanner (Phase 5) checks the lockfile when its vulnerability service is reachable.
 - **`main` is unprotected.** A ruleset (Phase 5) needs the maintainer's approval.
 
 ## 8. Overhead

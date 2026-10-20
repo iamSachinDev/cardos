@@ -27,6 +27,7 @@ Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **C
 | [`docs/ai-engineering/PHASE-STATUS.md`](../docs/ai-engineering/PHASE-STATUS.md) | Status of each phase | WARM | maintainer | — |
 | [`docs/ai-engineering/DASHBOARD.md`](../docs/ai-engineering/DASHBOARD.md) | Phase 10 local status view: phase evidence, Actions link, Promptfoo report, telemetry decision | WARM | maintainer | 2026-10-19 |
 | [`docs/ai-engineering/PRODUCTION.md`](../docs/ai-engineering/PRODUCTION.md) | Phase 11 exact dependency pins, Burnrate backup and restore procedure, and Not applicable practices | WARM | maintainer | 2026-10-20 |
+| [`docs/ai-engineering/INTEGRATION-BOOTSTRAP.md`](../docs/ai-engineering/INTEGRATION-BOOTSTRAP.md) | Phase 12 clean-checkout pass, criterion matrix and reusable generic bootstrap | WARM | maintainer | 2026-10-20 |
 | [`docs/ai-engineering/DOCS-AUTOMATION.md`](../docs/ai-engineering/DOCS-AUTOMATION.md) | Phase 8 generated and checked docs; Not applicable types | WARM | maintainer | 2026-10-19 |
 | [`docs/ai-engineering/EVALUATION-QUALITY.md`](../docs/ai-engineering/EVALUATION-QUALITY.md) | Phase 9 local Vitest and synthetic Promptfoo pilot procedure and result | WARM | maintainer | 2026-10-19 |
 | [`docs/ai-engineering/ROUTES.md`](../docs/ai-engineering/ROUTES.md) | Generated Astro route inventory | WARM | maintainer | 2026-10-19 |

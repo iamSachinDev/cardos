@@ -12,11 +12,11 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 
 | Field | Value |
 |---|---|
-| Phase | 11: Production safeguards ([status](../docs/ai-engineering/PHASE-STATUS.md#p11-production)); exact dependency pins and a private Burnrate backup and restore runbook are on the local branch. Phases 10, 9, 8 and 5 remain partially implemented; phases 2 to 4, 6 and 7 are implemented and verified. |
-| Chunk | Direct dependency pins and [PRODUCTION.md](../docs/ai-engineering/PRODUCTION.md) with the maintainer-run backup and restore procedure |
-| Branches / worktree | `ai/codex/production` in `../cardos-wt/codex-production`, based on `ai/codex/dashboard` in `../cardos-wt/codex-dashboard`; earlier phases are stacked from `main` at `e7598889`. None of these branches is merged or pushed. This clone has `core.hooksPath=.githooks` set |
-| Owner | Codex owns the Phase 11 task branch and its [task file](tasks/production.md); the maintainer reviews before merge or publication. |
-| Main checkout | `../cardos` on `main`: the maintainer and Codex work there. `main` has moved ahead of the AI-OS base (`git log --oneline e7598889..main`; see known problem 6); none of those commits touch AI-OS files. Don't edit it from these branches |
+| Phase | 12: Integration verification and bootstrap, partially implemented ([status](../docs/ai-engineering/PHASE-STATUS.md#p12-integration-verification-and-bootstrap)); the local clean-checkout pass and generic bootstrap are ready. Phases 10, 9, 8 and 5 remain partially implemented. |
+| Chunk | [INTEGRATION-BOOTSTRAP.md](../docs/ai-engineering/INTEGRATION-BOOTSTRAP.md) records the Phase 2–11 matrix and a safe reusable agent foundation. |
+| Branches / worktree | `ai/codex/integration-bootstrap` in `../cardos-wt/codex-integration-bootstrap`, based on `ai/codex/production`; earlier phases are stacked from `main` at `e7598889`. None of these branches is merged or pushed. This clone has `core.hooksPath=.githooks` set. |
+| Owner | Codex owns the Phase 12 task branch and its [task file](tasks/integration-bootstrap.md); the maintainer reviews before merge or publication. |
+| Main checkout | `../cardos` on `main` has seven newer commits, including the ST Finance rebrand. Those changes are not reconciled with this AI-OS branch; do not edit `main` from here. |
 | Specification | [`specs/001-gmail-sync/spec.md`](../specs/001-gmail-sync/spec.md): Draft (retroactive), pending the maintainer's acceptance. Constitution [`.specify/memory/constitution.md`](../.specify/memory/constitution.md) v1.0.0: Proposed, pending ratification |
 | Last updated | 2026-10-20 |
 
@@ -34,6 +34,7 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 - **Phase 9 local chunk** (`ai/codex/evaluation-quality`): `npm test` passes 11 unit tests across `src/lib`; a four-task Promptfoo/Codex SDK pilot passes on synthetic snippets. Reproduction and limits are in [EVALUATION-QUALITY.md](../docs/ai-engineering/EVALUATION-QUALITY.md). CI wiring is deferred.
 - **Phase 10 local chunk** (`ai/codex/dashboard`): [DASHBOARD.md](../docs/ai-engineering/DASHBOARD.md) gathers status, local check evidence, Actions navigation and the synthetic Promptfoo result. Both installed CLIs document OpenTelemetry export; no collector or live export was enabled. Remote Actions evidence remains open.
 - **Phase 11 local chunk** (`ai/codex/production`): direct dependency declarations match the locked versions, and [PRODUCTION.md](../docs/ai-engineering/PRODUCTION.md) covers a stopped-service Burnrate snapshot and restore. No live financial data was accessed and no backup was run.
+- **Phase 12 local chunk** (`ai/codex/integration-bootstrap`): clean `npm ci`, tests, build, policy checks and generic bootstrap in synthetic repositories. [INTEGRATION-BOOTSTRAP.md](../docs/ai-engineering/INTEGRATION-BOOTSTRAP.md) lists each earlier phase's evidence and remaining gates. OSV was unavailable because its service could not be resolved.
 
 ## Checks (details and dates in PHASE-STATUS)
 
@@ -54,7 +55,7 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 3. **Card hints in public files:** Burnrate patch comments include a real card-issuer prefix in an example filename and hint at a card product (public since `89af6c1c`); ADR 0001's Context hints at which issuers are in use.
 4. **`.gitignore` gaps:** no patterns for a downloaded Google OAuth client JSON or for local agent settings. Phase 5's hook and Claude deny rules now block the client JSON; the `.gitignore` lines themselves are the maintainer's call.
 5. **Possible UI bug:** `src/styles/optimize.css` uses colour variables that no stylesheet defines.
-6. **AI-OS docs are behind `main`.** After the AI-OS base, Codex committed `patches/burnrate-gmail-one-year.patch` (365 days, every result page) and `patches/burnrate-card-personal-fees.patch` on `main`. Spec 001 is baselined at `e7598889` and describes 120 days and a 200-message cap: FR-005, FR-034, SC-009, user story 1's fourth acceptance scenario, the "more than 200" edge case, the "both patches" assumption and G-14. Revise these after the branches are merged with `main`, together with ADR 0001, `.ai/CONTEXT.md` and `INDEX.md`.
+6. **AI-OS docs are behind `main`.** Newer `main` commits include one-year Gmail scanning, personal-fee handling, a spending trend and the ST Finance rebrand. Spec 001 is baselined at `e7598889` and still describes 120 days and a 200-message cap. Reconcile the branches and review spec 001, ADR 0001, `.ai/CONTEXT.md`, `INDEX.md` and agent rules before treating the AI-OS branch as current-main evidence.
 7. **`.serena/` tracking:** `.serena/` is gitignored, but two of its files are tracked (Phase 6).
 8. **`node_modules` symlink:** in `../cardos-ai-os` it points to the main checkout and shows as untracked. Stage explicit paths only; Astro commands here can rewrite the main checkout's Vite cache.
 9. **Spec 001 gaps G-1 to G-17** list further mismatches between the README, the code and the patches.
@@ -75,5 +76,6 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 6. Phase 9 local checks are on `ai/codex/evaluation-quality`. Review the tests, pilot and dependency; the CI test gate remains deferred under the maintainer's local-only instruction.
 7. Phase 10 local status view is on `ai/codex/dashboard`. Review it; verify the Actions check view after publication, if the maintainer later authorizes that step. Keep telemetry deferred until a privacy-reviewed source and destination exist.
 8. Phase 11 dependency pins and backup runbook are on `ai/codex/production`. Review the local branch; the maintainer rehearses backup and restore privately before relying on it.
+9. Phase 12's local pass and bootstrap are on `ai/codex/integration-bootstrap`. Reconcile the newer ST Finance `main` before full integration verification; P5/P8/P9/P10 remote and CI gates remain open under the local-only instruction.
 
 Relevant completed commit: `c0b036a4` on `ai-os/phase-7`.
