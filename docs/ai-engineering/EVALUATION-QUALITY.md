@@ -7,7 +7,7 @@
 
 ## Vitest
 
-`npm test` runs the pinned Vitest 5.0.4 against `src/lib`. The 11 tests in `api.test.ts`, `gmail.test.ts` and `live.test.ts` cover IST date boundaries, due sorting and missing amounts, JSON fetch errors, Google sign-in origin validation, reconnect classification, live refresh state, and mutation responses. All network calls in these tests are mocked. The tests do not read Burnrate, statements, OAuth files, or real card data.
+`npm test` runs the pinned Vitest 5.0.4 against `src/lib`. The 11 tests recorded in Phase 9, in `api.test.ts`, `gmail.test.ts` and `live.test.ts`, cover IST date boundaries, due sorting and missing amounts, JSON fetch errors, Google sign-in origin validation, reconnect classification, live refresh state, and mutation responses. `trends.test.ts` was added with the spend-trend work, making 14 tests in four files, all passing on 2026-10-21. All network calls in these tests are mocked. The tests do not read Burnrate, statements, OAuth files, or real card data.
 
 ## Promptfoo pilot
 
@@ -36,6 +36,6 @@ The raw report stays under `/private/tmp`; review it before sharing. Do not add 
 
 On 19 Oct 2026 at 19:57 IST, Promptfoo 0.124.1 with Codex SDK 0.156.1 and `gpt-6-luna` completed four tasks: IST date requirement, unknown fee label, exact redirect origin, and preserving the last successful refresh result. Exact output assertions passed **4/4**, with zero provider errors. The agent received the fixtures inline; this checks answer quality on short synthetic snippets, not repository navigation or end-to-end CardOS behavior. An earlier file-reading variant failed because the provider did not read the temporary workspace files, so it is not counted as a passing result.
 
-The CI gate is still open. The maintainer requested local-only checks for now, and `AGENTS.md` §7 requires explicit approval to change the workflow. No CI claim is made from these local runs.
+CI wiring: commit `8b003986` (on `ai/claude/finish-phases`, going to `main` through a pull request) adds `npm test` to CI job `build`; the maintainer approved the workflow change on 2026-10-21, superseding the earlier local-only instruction. `npm test` passes locally (14/14); the GitHub result is pending, so no CI claim is made yet. The Promptfoo pilot is not run in CI. Because the `protect-main` ruleset is imported with enforcement `disabled`, a failing test does not yet block a merge until the maintainer activates it.
 
-`AGENTS.md` §2 still says no test command exists. Updating agent-rule files also requires explicit approval under §7; the current command is documented here and in `.ai/CONTEXT.md` pending that review.
+`AGENTS.md` §2 now lists `npm test` as a command.

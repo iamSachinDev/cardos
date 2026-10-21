@@ -4,7 +4,7 @@
 - **Audience:** The maintainer and coding agents.
 - **Owner:** The maintainer.
 - **Related docs:** [Roadmap, Phase 8](IMPLEMENTATION-ROADMAP.md#p8-docs-automation) · [Phase status](PHASE-STATUS.md#p8-docs-automation) · [`.ai/` lifecycle](../../.ai/LIFECYCLE.md)
-- **How to validate:** Run `npm run docs:test`, `npm run docs:routes:check` and `npm run docs:links`. Run the advisory impact report with two Git revisions.
+- **How to validate:** Run `npm run docs:test`, `npm run docs:routes:check` and `npm run docs:links`. Run the advisory impact report with two Git revisions. CI runs the same commands from `8b003986`; check its run on the pull request.
 
 ## Applicable documentation
 
@@ -25,4 +25,4 @@ The impact report prompts a CONTEXT review for changes under `src/` or `scripts/
 | Deployment and infrastructure runbooks | This project runs locally and has no deployment target or managed infrastructure. |
 | Published package release notes | CardOS is a private local app, not a published package. Git history and the phase status record the engineering changes. |
 
-Rules, specifications, decisions, security guidance, status evidence and architecture explanations remain authored and reviewed by people. The checker never generates them, changes their status or reads Burnrate data. All checks run locally; the CI doc-impact step is deferred.
+Rules, specifications, decisions, security guidance, status evidence and architecture explanations remain authored and reviewed by people. The checker never generates them, changes their status or reads Burnrate data. The checks run locally with no external requests. Commit `8b003986` (on `ai/claude/finish-phases`, headed for `main` through a pull request) also runs `docs:test`, `docs:links` and `docs:routes:check` in CI job `build`, plus `docs:impact` as an advisory step on pull requests only; all three checks exit 0 locally on that tree, and the GitHub result is pending.
