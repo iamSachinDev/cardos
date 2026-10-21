@@ -1,0 +1,61 @@
+--- a/backend/services/gmail_sync.py
++++ b/backend/services/gmail_sync.py
+@@ -30,15 +30,14 @@
+ 
+ GMAIL_READONLY = "https://www.googleapis.com/auth/gmail.readonly"
+ MIN_AUTO_SYNC_SECONDS = 3600
+-# Upper bound on messages scanned per sync; listed in pages of _LIST_PAGE_SIZE.
+-MAX_MESSAGES_PER_SYNC = 200
++# Gmail caps each list request at 100 messages; keep paging through the full year.
+ _LIST_PAGE_SIZE = 100
+ 
+ # Startup, post-connect and manual syncs can overlap; run them one at a time.
+ _sync_lock = threading.Lock()
+ 
+ _GMAIL_QUERY = (
+-    "has:attachment newer_than:120d "
++    "has:attachment newer_than:365d "
+     "(filename:pdf OR filename:csv OR filename:xlsx OR filename:xls) "
+     "(subject:statement OR subject:e-statement OR subject:STMT OR subject:SOA OR "
+     "subject:credit OR subject:card OR subject:account OR "
+@@ -174,31 +173,27 @@
+ 
+ 
+ def _list_message_ids(service) -> List[str]:
+-    """Page through matching messages (newest first), up to MAX_MESSAGES_PER_SYNC."""
++    """Page through every statement-like message in the bounded Gmail query."""
+     ids: List[str] = []
+     page_token: Optional[str] = None
+-    while len(ids) < MAX_MESSAGES_PER_SYNC:
++    seen_page_tokens: Set[str] = set()
++    while True:
+         kwargs: Dict[str, Any] = {
+             "userId": "me",
+             "q": _GMAIL_QUERY,
+-            "maxResults": min(_LIST_PAGE_SIZE, MAX_MESSAGES_PER_SYNC - len(ids)),
++            "maxResults": _LIST_PAGE_SIZE,
+         }
+         if page_token:
+             kwargs["pageToken"] = page_token
+-        try:
+-            lst = service.users().messages().list(**kwargs).execute()
+-        except HttpError:
+-            if not ids:
+-                raise
+-            # Keep what we have; the rest is picked up by the next sync.
+-            logger.warning("Gmail API list failed after %d messages; continuing with those", len(ids))
+-            break
++        # A partial list cannot advance last_gmail_sync: retry the entire scan.
++        lst = service.users().messages().list(**kwargs).execute()
+         ids.extend(m["id"] for m in lst.get("messages", []))
+         page_token = lst.get("nextPageToken")
+         if not page_token:
+             break
+-    if page_token and len(ids) >= MAX_MESSAGES_PER_SYNC:
+-        logger.warning("Gmail sync capped at %d messages; older matches were not scanned", MAX_MESSAGES_PER_SYNC)
++        if page_token in seen_page_tokens:
++            raise RuntimeError("Gmail pagination repeated a page token")
++        seen_page_tokens.add(page_token)
+     return list(dict.fromkeys(ids))
+ 
+ 

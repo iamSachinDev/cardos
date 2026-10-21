@@ -8,7 +8,7 @@
 
 > **Rule: a status changes only with recorded evidence.**
 
-Last updated: 2026-10-20 · Base commit: `e7598889` on `main` · AI-OS phase branches remain local and stacked; Phase 12 is on `ai/codex/integration-bootstrap`, based on the Phase 11 branch. `main` has since moved ahead (see [.ai/CURRENT.md](../../.ai/CURRENT.md))
+Last updated: 2026-10-21 IST · Original AI-OS base: `e7598889` on `main` · Phase 12's original pass is on `ai/codex/integration-bootstrap`; local branch `ai/codex/main-reconciliation` combines it with committed `main` through `18ccecd0` (see [.ai/CURRENT.md](../../.ai/CURRENT.md))
 
 ## Status vocabulary
 
@@ -40,7 +40,7 @@ This table holds each phase's status and next action. Edit it, and the Phase 2 c
 | [P9](#p9-evaluation-and-quality) | Evaluation and quality | Partially implemented | P5 | Review local tests and pilot; CI test gate remains deferred. |
 | [P10](#p10-dashboard) | Dashboard | Partially implemented | P2, P5, P9 | Review the local [status view](DASHBOARD.md); verify Actions checks only after a published run. |
 | [P11](#p11-production) | Production | Implemented and verified | P5 | Review the local branch; the maintainer rehearses backup and restore privately before relying on it. |
-| [P12](#p12-integration-verification-and-bootstrap) | Integration verification and bootstrap | Partially implemented | P2 to P11 | Review the local [pass and bootstrap](INTEGRATION-BOOTSTRAP.md); reconcile current `main` and finish deferred gates before claiming full integration. |
+| [P12](#p12-integration-verification-and-bootstrap) | Integration verification and bootstrap | Partially implemented | P2 to P11 | Review the local [pass, bootstrap and reconciliation](INTEGRATION-BOOTSTRAP.md); resolve governance and deferred gates before claiming full integration. |
 
 ## Phase details
 
@@ -287,7 +287,8 @@ Routing in this phase: two writer agents (balanced tier), two independent review
 | Completion criteria | On a clean checkout, one verification pass confirms each earlier phase's criterion, and a reusable bootstrap sets up the same foundation in another repo ([roadmap](IMPLEMENTATION-ROADMAP.md#p12-integration-verification-and-bootstrap)) |
 | Chunks | A clean Phase 12 worktree and approved `npm ci`; local Phase 2–11 verification matrix; generic preview-first [bootstrap](INTEGRATION-BOOTSTRAP.md#reusable-foundation-bootstrap) with inert templates and synthetic tests. |
 | Verification evidence | 2026-10-20, final build at 11:59 IST: `npm ci` installed 307 packages and npm reported 0 vulnerabilities; 12 direct packages resolved; `npx tsc --noEmit` passed; `npm test` passed 11/11; `npm run build` checked 43 Astro files with 0 diagnostics and built 12 pages; `npm run docs:test` passed 4/4; route inventory matched; `npm run docs:links` checked 345 local links with 0 issues; `npm run ai:models` matched installed Claude 2.1.303 and Codex 0.163.0; 25 policy fixtures and 24/24 model-policy checks passed; 9/9 synthetic bootstrap tests passed after independent review fixes. Full-history and working-tree gitleaks scans found no leaks. Final staged gates are in the [task file](../../.ai/tasks/integration-bootstrap.md). OSV could enumerate 393 packages but could not reach `api.osv.dev`; its zero-vulnerability summary is **not** accepted as a pass. |
-| Blockers | Full criterion is open: P5, P8, P9 and P10 remain partial under local-only CI/remote scope; the current `main` ST Finance changes have not been reconciled with this stacked AI-OS branch. P11 live recovery has not been rehearsed. `AGENTS.md` and CI changes need separate maintainer approval. |
+| Reconciliation evidence | 2026-10-21, 19:14 IST: in the local [reconciliation task](../../.ai/tasks/main-reconciliation.md), approved `npm ci` installed 307 packages with npm reporting 0 vulnerabilities; `npm test` passed 14/14 synthetic tests; `npm run build` checked 47 Astro files with 0 diagnostics and built 12 pages; docs links passed with 350 checked. The current agent rules and local policy were updated with approval. Eleven Opengrep rules parse and targeted regex fixtures pass; the Opengrep binary was unavailable for an actual scan. |
+| Blockers | Full criterion is open: P5, P8, P9 and P10 remain partial under local-only CI/remote scope. The committed ST Finance changes are reconciled and checked locally on a separate branch. Actual Opengrep execution and remote CI checks remain unverified; accepted ADR 0001 still describes the older patch baseline and needs separate approval to edit. P11 live recovery has not been rehearsed. CI changes remain deferred. |
 | Security findings | No Burnrate data, env, key, statement, service or live API was accessed. Bootstrap previews by default, refuses dirty/colliding/symlinked/Git-ignored targets, disables a configured Git filesystem monitor, rolls back a failed write, never overwrites or installs, and applied only to synthetic temporary Git repositories. No real personal or financial data was placed in templates or tests. |
 | Documentation status | [INTEGRATION-BOOTSTRAP.md](INTEGRATION-BOOTSTRAP.md) records the matrix, run instructions and limits; README and `.ai/` map updated. |
 | Git commit | Local `ai/codex/integration-bootstrap` branch; see `git log -1` after commit |

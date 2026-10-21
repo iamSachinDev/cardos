@@ -4,14 +4,14 @@
 
 **Created**: 2026-10-18
 
-**Status**: Draft (retroactive): documents shipped behaviour as of commit e7598889; pending maintainer acceptance
+**Status**: Draft (retroactive): documents the historical behaviour at commit e7598889; pending a current-app revision and maintainer acceptance
 
 **Input**: User description: "Write a retroactive specification of CardOS's shipped Gmail statement sync: connecting a Gmail account, syncing statement attachments on demand, seeing sync status in the top bar, reconnecting when Google's authorization expires, and configuring the Google OAuth client with `npm run gmail:setup`. Express what CardOS needs from Burnrate, its external finance engine, as labelled requirements on that dependency."
 
 > **How to read this retroactive spec**
 >
 > - It describes behaviour that already ships and proposes no change. Where the README, the code and the patches disagree, the code and patches win and the difference is listed under [Known Gaps and Discrepancies](#known-gaps-and-discrepancies).
-> - **Baseline**: the code and patches at commit e7598889. Anything changed later, including uncommitted work in other checkouts, is outside this baseline. The 120-day look-back window and the 200-message cap are stated as of this commit.
+> - **Baseline**: the code and patches at commit e7598889. Later changes are outside this baseline. The 120-day look-back window, 200-message cap, `BurnrateStatus` component and quoted top-bar copy below describe that older version; they must not be used as current ST Finance requirements. The newer committed one-year patch uses a 365-day look-back and removes the 200-message cap, and the current top bar uses `AppStatus` with separate local-data and Gmail states. Re-baseline the scenarios, requirements and traceability before accepting this spec.
 > - **Labels**: `[CardOS]` requirements are met by code in this repository (`src/`, `scripts/`). `[Burnrate]` requirements are on an external dependency that CardOS does not own: behaviour the feature needs from Burnrate 0.5.2, delivered by upstream code plus two local patches. **Patch 1** is `patches/burnrate-0.5.2.patch` and **Patch 2** is `patches/burnrate-password-reparse-preserve.patch`. Where this repository shows only CardOS's side of a `[Burnrate]` requirement, the Traceability table says so.
 > - **Burnrate source outside this repository**: a few facts are marked "coordinator-verified 2026-10-17, Burnrate 0.5.2 source (not in repo)". They come from a reading of the installed Burnrate source, which this repository does not contain, so they cannot be re-checked from here. They settle what FR-034, FR-041 and FR-059 say; they are readings of code, not observed behaviour, so they are not evidence.
 > - **Evidence**: only what was observed on 2026-10-17/18 counts (see [Traceability](#traceability)). Everything else is marked Unverified, even where it very probably works.

@@ -1,14 +1,14 @@
-# CardOS system context
+# ST Finance system context
 
-- **Purpose:** Verified description of how CardOS is built and how it talks to Burnrate, so an agent can work without re-reading the repo.
+- **Purpose:** Verified description of how ST Finance (formerly CardOS) is built and how it talks to Burnrate, so an agent can work without re-reading the repo.
 - **Audience:** AI coding agents and the maintainer.
 - **Owner:** The maintainer.
 - **Related docs:** [AGENTS.md](../AGENTS.md) · [INDEX](INDEX.md) · [ADR 0001](decisions/0001-local-burnrate-patch.md) · [README](../README.md) · [CURRENT](CURRENT.md)
-- **How to validate:** `file:line` references hold at the commit in the footer. Re-check with `grep -rn "/api/" src/` (endpoints), `sed -n '58,66p' src/lib/live.ts` (cadence) and `astro.config.mjs` (ports).
+- **How to validate:** Re-check endpoint paths in `src/lib/live.ts`, the refresh cadence there, and proxy ports in `astro.config.mjs`; line numbers below describe the earlier base and may move.
 
 ## Runtime topology
 
-CardOS is a frontend only: no database and no server-side data fetching. Astro renders page shells and React islands call `/api/*` from the browser.
+ST Finance is a frontend only: no database and no server-side data fetching. Astro renders page shells and React islands call `/api/*` from the browser.
 
 ```mermaid
 flowchart LR
@@ -19,13 +19,13 @@ flowchart LR
 ```
 
 - Host and port: `astro.config.mjs:20-21`. `strictPort: true` (`:10`) makes a busy port an error. The `/api` proxy targets `http://127.0.0.1:8000` (`:13-14`).
-- The launcher always runs `astro dev` (`scripts/start-cardos.mjs:133`). The proxy lives under `vite.server`; whether `npm run preview` proxies is unverified.
-- The Burnrate URL and both ports are hardcoded in three places: `astro.config.mjs`, `scripts/start-cardos.mjs:9-10,123,133,149`, `scripts/configure-gmail.mjs:8-10`. Change them together.
+- The launcher starts `astro dev` if the UI is absent, and recognizes either ST Finance or legacy CardOS text on the local page. The proxy lives under `vite.server`; whether `npm run preview` proxies is unverified.
+- The Burnrate URL and both ports appear in `astro.config.mjs`, `scripts/start-cardos.mjs` and `scripts/configure-gmail.mjs`. Change them together.
 - Locked stack (`package-lock.json`): Astro 7.4, React 19.3, Tailwind 4.3, TypeScript 5.9; the Phase 11 branch pins all direct dependencies to these resolved versions. `npm test` runs Vitest 5.0.4 over `src/lib`; `docs:test` tests the documentation checks; `npm run check` (`astro check`) is the type check. No lint script exists.
 
 ## Module map
 
-Every page renders inside `src/layouts/AppShell.astro` (sidebar and mobile nav, theme toggle, `BurnrateStatus` in the top bar); all but `/more` mount one React component. Components hydrate with `client:load`, except `CardDetail` (`client:only="react"`), which reads `?id=` from `window.location.search` (`CardDetail.tsx:7`).
+Every page renders inside `src/layouts/AppShell.astro` (sidebar and mobile nav, theme toggle, `AppStatus` in the top bar); all but `/more` mount one React component. Components hydrate with `client:load`, except `CardDetail` (`client:only="react"`), which reads `?id=` from `window.location.search`.
 
 | Route | Page (`src/pages/`) | Component (`src/components/`) | Live data it reads |
 |---|---|---|---|
@@ -42,9 +42,9 @@ Every page renders inside `src/layouts/AppShell.astro` (sidebar and mobile nav, 
 | `/settings` | `settings.astro` | `SettingsView` | settings, Gmail status; settings and Gmail mutations |
 | `/more` | `more.astro` | none (static links; the mobile nav's "More") | none |
 
-Shared: `BurnrateStatus` (connection pill, Sync button, Gmail connect and sync) also calls `startLiveSync()` (`BurnrateStatus.tsx:12`), so live sync runs on every page. `LineChart` is an SVG chart used by Dashboard and Analytics. Styles: `global.css` (AppShell), `optimize.css` (Milestones, Offers, Settings), `statements.css` (Statements).
+Shared: `AppStatus` shows separate local-data and Gmail states, refreshes local data, and offers a Gmail check when connected. It calls `startLiveSync()`, so live sync runs on every page. `LineChart` and `SixMonthTrend` render charts. `publicFees.ts` holds sourced, published product fees separately from any cardholder's recorded fee or waiver. Styles include `global.css`, `optimize.css`, `statements.css`, and `trend.css`.
 
-- `src/lib/api.ts`: types (`Card`, `DueItem`, `Transaction`, `Statement`, which carries both snake_case and camelCase fields); `apiGet` with an 8 s timeout (`:8`); INR and `en-IN` formatting; IST dates (`Asia/Kolkata`, `:24`), reading timezone-less timestamps as UTC (`:31-37`); `upcomingDues` merges Burnrate dues with manual card due dates (`:73`); `bankLabel`, `bankClass` (`:86-87`).
+- `src/lib/api.ts`: types (`Card`, including personal annual-fee fields; `DueItem`, `Transaction`, `Statement`); `apiGet` with an 8 s timeout; INR and `en-IN` formatting; IST dates (`Asia/Kolkata`), reading timezone-less timestamps as UTC; `upcomingDues` merges Burnrate dues with manual card due dates; `bankLabel`, `bankClass`.
 - `src/lib/live.ts`: shared in-memory store, polling, hooks and `apiMutate` (next section).
 - `src/lib/gmail.ts`: `connectGmail` (POST `/api/gmail/auth/start`; follows only an `accounts.google.com` URL, `:13-14`), `syncGmail` (180 s timeout, `:22`), `gmailNeedsReconnect` (401 or token-error text, `:17-20`).
 
@@ -54,7 +54,7 @@ Components never call `fetch`: they read through `live.ts` hooks and write throu
 
 - **Read:** `useLiveData(path)` reads the shared store (`live.ts:134`). `refreshAll` (`:94-123`) fetches the 11 core `endpoints` (`:4-16`) together. `useLiveQuery(path)` (`:138`) handles dynamic paths: it fetches on mount and joins every later `refreshAll` while mounted.
 - **Failure handling:** one in-flight request per path (`:39`) and one running refresh (`:95`). A failed path keeps its old data and gets `error: true` (`:112`). Connection state is `offline` if `/api/settings` fails, `error` if only other paths fail (`:116-119`).
-- **Storage:** API data stays in memory (`entries`, `:20`); the only browser storage is the `localStorage` key `cardos-theme` (`AppShell.astro:50,59`).
+- **Storage:** API data stays in memory. Theme selection is written to the `localStorage` key `st-theme`; `AppShell.astro` still reads legacy `cardos-theme` when the new key is absent.
 
 | Trigger | Behaviour | Where |
 |---|---|---|
@@ -63,14 +63,14 @@ Components never call `fetch`: they read through `live.ts` hooks and write throu
 | Periodic | Full refresh every 45 s while visible; no timers while hidden | `live.ts:61-62` |
 | After failures | Delay `min(60 s, 5 s × 2^min(n,4))`: 10, 20, 40, then 60 s | `live.ts:62` |
 | Processing poll | Every 5 s, statements and processing logs only, while any row is `processing`, `pending`, `queued` or `parsing` and there are no failures. A changed fingerprint triggers a full `refreshAll('change')` | `live.ts:52-56,63-65,68-92` |
-| Manual | Sync button calls `refreshAll('manual')` | `BurnrateStatus.tsx:23` |
+| Manual | Refresh data button calls `refreshAll('manual')` | `AppStatus.tsx` |
 | After a mutation | `apiMutate` awaits any running refresh, then `refreshAll('mutation')` | `live.ts:183-184` |
 
 From reading the code (not observed at runtime): every 5 s poll ends in `schedule()`, which re-arms the 45 s timer, so the 45 s full refresh is deferred while any row is in a processing status.
 
 **Mutations:** `apiMutate(path, method, body?, {timeoutMs?})` (`live.ts:164-186`) sends JSON (20 s default, `:166`) and throws `ApiMutationError(status, detail)` on a non-2xx response. Call sites: `PUT /api/settings` (`SettingsView.tsx:58`), `POST …/reparse-with-password` (`StatementsView.tsx:23`, 60 s), `POST /api/gmail/sync` (`gmail.ts:22`, 180 s). `connectGmail` calls `fetch` directly, so it triggers no refresh. After Google sign-in, Burnrate redirects to `/settings?gmail=connected|error` and `SettingsView` runs the first sync (`:45-48`).
 
-## Burnrate endpoints CardOS calls
+## Burnrate endpoints ST Finance calls
 
 From `grep -rn "/api/" src/`; all are relative paths proxied to Burnrate.
 
@@ -96,7 +96,7 @@ The scripts also call `/api/settings` (`start-cardos.mjs:9`) and `/api/gmail/sta
 
 - **`npm run cardos`** (`package.json:9`; also `start-cardos.command`) runs `scripts/start-cardos.mjs`:
   1. Burnrate is ready when `GET /api/settings` returns JSON with a `settings` key (2.5 s timeout, `:16-33`). If not, it checks that the Homebrew formula is installed, runs `brew services start`, waits up to 30 s, then `restart` and waits up to 30 s more, else fails (`:79-114`).
-  2. CardOS counts as running when `127.0.0.1:4321` answers with a body containing "CardOS"; any other listener is an error. If nothing listens, it starts `astro dev` detached, logging to `cardos-astro.log` in the OS temp dir (mode 600), and waits up to 45 s (`:35-44,116-153`). It needs `node_modules` (`npm ci` first).
+  2. ST Finance counts as running when `127.0.0.1:4321` answers with a body containing "ST Finance" or legacy "CardOS"; any other listener is an error. If nothing listens, it starts `astro dev` detached, logging to `cardos-astro.log` in the OS temp dir (mode 600), and waits up to 45 s. It needs `node_modules` (`npm ci` first).
   3. It opens the browser unless `CARDOS_NO_OPEN=1` (`:161-162`).
 - **`npm run gmail:setup [-- <client.json>]`** runs `scripts/configure-gmail.mjs`:
   1. Finds Burnrate's env file: `BURNRATE_ENV_FILE`, else `libexec/.env.production` under the Homebrew prefix (`:38-47`).
@@ -108,10 +108,10 @@ The scripts also call `/api/settings` (`start-cardos.mjs:9`) and `/api/gmail/sta
 
 ## External dependency
 
-Burnrate (FastAPI and SQLite, per the README) is the finance engine, installed through Homebrew (formula name: `formula` in `scripts/start-cardos.mjs:11`). This repo targets Burnrate 0.5.2, from the patch filename and README. A local patch set in `patches/` fixes its Gmail sync, bank detection, password handling and non-card PDF handling, and adds a Standard Chartered parser: see [ADR 0001](decisions/0001-local-burnrate-patch.md). `brew upgrade burnrate` removes the patches and Burnrate's env file; follow the README's re-apply steps, which cover only `burnrate-0.5.2.patch` (see ADR 0001 for the second patch).
+Burnrate (FastAPI and SQLite) is the separate finance engine, installed through Homebrew (formula name: `formula` in `scripts/start-cardos.mjs`). The original patch targets Burnrate 0.5.2. A local patch set in `patches/` covers Gmail sync and a one-year scan, bank detection, password handling, non-card PDF handling, personal annual-fee fields, and a Standard Chartered parser. See [ADR 0001](decisions/0001-local-burnrate-patch.md), which records the earlier patch baseline and awaits a separately authorized update. A Burnrate upgrade can replace locally applied patches and its env file; inspect the installed version and reapply only compatible patches privately.
 
 ## Not in this repo
 
 Burnrate's SQLite database, its `.env.production` (Google OAuth client credentials and the optional `BURNRATE_IGNORE_FILENAME_REGEX`), the statement PDFs and the watch folder. `.gitignore` excludes `.env*`, databases, `*.pdf`, `*.csv` and similar exports.
 
-Last validated: app architecture 2026-10-18 at commit e7598889; documentation tooling and local test command 2026-10-19; direct dependency pins 2026-10-20 on the Phase 11 branch.
+Last validated: app source in the local reconciliation worktree on 2026-10-21 IST; documentation tooling and local test command 2026-10-19; direct dependency pins 2026-10-20 on the Phase 11 branch. Endpoint and cadence line numbers above were recorded at `e7598889` and should be rechecked before code changes.

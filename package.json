@@ -1,9 +1,9 @@
 {
-  "name": "cardos-burnrate-ui",
+  "name": "st-finance",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Premium Astro frontend for the local Burnrate credit-card analytics backend.",
+  "description": "Premium Astro frontend for personal credit-card and finance analytics.",
   "license": "MIT",
   "scripts": {
     "cardos": "node scripts/start-cardos.mjs",

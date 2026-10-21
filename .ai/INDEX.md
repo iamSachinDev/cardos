@@ -13,8 +13,8 @@ Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **C
 | [`AGENTS.md`](../AGENTS.md) | Shared rules for every agent: commands, conventions, data protection, multi-agent rules, risk classes, commit checklist | HOT | maintainer | — |
 | [`CLAUDE.md`](../CLAUDE.md) | Claude Code entrypoint; imports `AGENTS.md` | HOT | maintainer | — |
 | [`.ai/CURRENT.md`](CURRENT.md) | Session summary: state, ownership, next steps | HOT | maintainer | — |
-| [`.ai/INDEX.md`](INDEX.md) | This map: what to load for which task | HOT | maintainer | 2026-10-19 |
-| [`.ai/CONTEXT.md`](CONTEXT.md) | Verified architecture: topology, module map, data flow, endpoints, scripts | WARM | maintainer | 2026-10-19 (documentation tooling only) |
+| [`.ai/INDEX.md`](INDEX.md) | This map: what to load for which task | HOT | maintainer | 2026-10-21 |
+| [`.ai/CONTEXT.md`](CONTEXT.md) | Verified architecture: topology, module map, data flow, endpoints, scripts | WARM | maintainer | 2026-10-21 (source reconciliation) |
 | [`.ai/decisions/0001-local-burnrate-patch.md`](decisions/0001-local-burnrate-patch.md) | ADR: why Burnrate is patched locally and what the patches change | WARM | maintainer | 2026-10-18 |
 | [`.ai/decisions/0002-agent-memory.md`](decisions/0002-agent-memory.md) | ADR (Proposed): why ai-memory is deferred and `.ai/` handoffs are the shared memory; ai-memory facts and revisit conditions | WARM | maintainer | 2026-10-18 |
 | [`.ai/LIFECYCLE.md`](LIFECYCLE.md) | Lifecycle rules for every `.ai/` file and for local agent memory: who creates, updates, reviews, retires, size limits, what never goes in | WARM | maintainer | 2026-10-18 |
@@ -31,18 +31,21 @@ Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **C
 | [`docs/ai-engineering/DOCS-AUTOMATION.md`](../docs/ai-engineering/DOCS-AUTOMATION.md) | Phase 8 generated and checked docs; Not applicable types | WARM | maintainer | 2026-10-19 |
 | [`docs/ai-engineering/EVALUATION-QUALITY.md`](../docs/ai-engineering/EVALUATION-QUALITY.md) | Phase 9 local Vitest and synthetic Promptfoo pilot procedure and result | WARM | maintainer | 2026-10-19 |
 | [`docs/ai-engineering/ROUTES.md`](../docs/ai-engineering/ROUTES.md) | Generated Astro route inventory | WARM | maintainer | 2026-10-19 |
-| [`README.md`](../README.md) | User docs: run, data, Gmail setup, Burnrate patch | WARM | maintainer | 2026-10-18 (partial) |
+| [`README.md`](../README.md) | ST Finance user docs: features, run, optional Gmail setup, privacy and local Burnrate patch overview | WARM | maintainer | 2026-10-21 |
 | [`patches/burnrate-0.5.2.patch`](../patches/burnrate-0.5.2.patch) | Local fixes to Burnrate 0.5.2 (840 lines) | WARM | maintainer | 2026-10-18 |
 | [`patches/burnrate-password-reparse-preserve.patch`](../patches/burnrate-password-reparse-preserve.patch) | Follow-up: keep a locked statement when a password retry fails. Not in the README (see ADR 0001) | WARM | maintainer | 2026-10-18 |
+| [`patches/burnrate-gmail-one-year.patch`](../patches/burnrate-gmail-one-year.patch) | Local Gmail scan extension to one year without a 200-message cap | WARM | maintainer | 2026-10-21 (source review) |
+| [`patches/burnrate-card-personal-fees.patch`](../patches/burnrate-card-personal-fees.patch) | Local cardholder annual-fee fields, separate from published product fees | WARM | maintainer | 2026-10-21 (source review) |
 | [`scripts/`](../scripts/) | App setup and agent worktrees; model-policy and documentation checks | WARM | maintainer | 2026-10-19 (documentation tooling only) |
 | [`.specify/memory/constitution.md`](../.specify/memory/constitution.md) | Spec Kit constitution: durable principles and governance (proposed, pending ratification) | WARM | maintainer | 2026-10-18 |
 | [`specs/001-gmail-sync/spec.md`](../specs/001-gmail-sync/spec.md) | Retroactive spec of Gmail sync: requirement IDs, edge cases, traceability (draft) | WARM | maintainer | 2026-10-18 |
 | `.specify/` (templates, scripts, workflows, integration config), `.claude/skills/speckit-*`, `.agents/skills/speckit-*` | Spec Kit 1.2.1 install and its commands for each agent; managed by the `specify` CLI, don't hand-edit | COLD | maintainer | 2026-10-18 |
 
-`—` means no date is recorded here yet (a document's own header may carry one). `partial` means the README's Google-side claims were not checked. Known README gaps, left for the maintainer:
+`—` means no date is recorded here yet (a document's own header may carry one). Current limitations:
 
-- It does not mention `burnrate-password-reparse-preserve.patch`. Its only re-apply command (`patch -p0 …`) is for `burnrate-0.5.2.patch`; the second patch uses `a/` and `b/` prefixes, so applying it would need `-p1` (unverified). See [ADR 0001](decisions/0001-local-burnrate-patch.md).
-- The Phase 11 branch corrects its Node.js requirement to 22.22.0 or newer; earlier branches and `main` may still show "Node.js 20+" until merged.
+- README lists the patch directory but does not provide patch-application instructions. Verify compatibility with the locally installed Burnrate version before using a patch; see the historical [ADR 0001](decisions/0001-local-burnrate-patch.md).
+- The draft Gmail spec and accepted ADR 0001 predate the one-year and personal-fee patches. Their historical claims must not be used as current runtime guidance until reviewed.
+- Agent and policy files were updated for ST Finance in the local reconciliation branch. Actual Opengrep execution remains unverified until its binary is available; `.ai/CURRENT.md` tracks that gate.
 
 ## How to retrieve
 

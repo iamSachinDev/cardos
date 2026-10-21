@@ -37,7 +37,8 @@ async function cardosState() {
   if (!response) return 'offline';
   if (!response.ok) return 'occupied';
   try {
-    return (await response.text()).includes('CardOS') ? 'ready' : 'occupied';
+    const text = await response.text();
+    return (text.includes('ST Finance') || text.includes('CardOS')) ? 'ready' : 'occupied';
   } catch {
     return 'occupied';
   }
@@ -78,52 +79,52 @@ function findBrew() {
 
 async function ensureBurnrate() {
   if (await burnrateReady()) {
-    console.log('✓ Burnrate running');
-    console.log('✓ Burnrate API connected');
+    console.log('✓ Finance backend running');
+    console.log('✓ Financial API connected');
     return;
   }
 
-  console.log('Starting the existing Burnrate Homebrew service…');
+  console.log('Starting the local finance backend service…');
   const brew = findBrew();
   let installed;
   try {
     installed = await run(brew, ['list', '--versions', formula]);
   } catch {
-    throw new Error('Homebrew is unavailable. Start the existing Burnrate service, then run CardOS again.');
+    throw new Error('Homebrew is unavailable. Start the finance backend service, then run ST Finance again.');
   }
   if (installed.code !== 0 || !installed.output) {
-    throw new Error(`The existing ${formula} installation was not found. Start Burnrate manually, then run CardOS again.`);
+    throw new Error(`The backend service (${formula}) was not found. Start it manually, then run ST Finance again.`);
   }
 
   await run(brew, ['services', 'start', formula]);
   if (await waitFor(burnrateReady, 30000)) {
-    console.log('✓ Burnrate running');
-    console.log('✓ Burnrate API connected');
+    console.log('✓ Finance backend running');
+    console.log('✓ Financial API connected');
     return;
   }
 
   // A loaded Homebrew service may still be unresponsive; restart that service only.
-  console.log('Burnrate service is unresponsive; restarting it…');
+  console.log('Finance service is unresponsive; restarting it…');
   const restarted = await run(brew, ['services', 'restart', formula]);
   if (await waitFor(burnrateReady, 30000)) {
-    console.log('✓ Burnrate running');
-    console.log('✓ Burnrate API connected');
+    console.log('✓ Finance backend running');
+    console.log('✓ Financial API connected');
     return;
   }
-  throw new Error(`Burnrate did not respond at ${burnrateUrl}. ${restarted.output || 'Check the Homebrew Burnrate service logs.'}`);
+  throw new Error(`Finance backend did not respond at ${burnrateUrl}. ${restarted.output || 'Check the service logs.'}`);
 }
 
 async function ensureCardos() {
   const current = await cardosState();
   if (current === 'ready') {
-    console.log('✓ CardOS running');
+    console.log('✓ ST Finance running');
     return;
   }
   if (current === 'occupied') {
-    throw new Error('Port 4321 is occupied by another service. Free that port and run CardOS again.');
+    throw new Error('Port 4321 is occupied by another service. Free that port and run ST Finance again.');
   }
   if (!existsSync(astroBin)) {
-    throw new Error('CardOS dependencies are missing. Run npm ci, then npm run cardos.');
+    throw new Error('ST Finance dependencies are missing. Run npm ci, then npm run cardos.');
   }
 
   const logFd = openSync(astroLog, constants.O_WRONLY | constants.O_CREAT | constants.O_APPEND | constants.O_NOFOLLOW, 0o600);
@@ -146,14 +147,14 @@ async function ensureCardos() {
     if (child.exitCode === null && child.pid) {
       try { process.kill(-child.pid, 'SIGTERM'); } catch { /* Already exited. */ }
     }
-    throw new Error(`CardOS did not start on port 4321. See ${astroLog}.`);
+    throw new Error(`ST Finance did not start on port 4321. See ${astroLog}.`);
   }
   child.unref();
-  console.log('✓ CardOS running');
+  console.log('✓ ST Finance running');
 }
 
 async function main() {
-  console.log('\nCardOS\n');
+  console.log('\nST Finance\n');
   await ensureBurnrate();
   await ensureCardos();
   console.log('✓ Live data ready');

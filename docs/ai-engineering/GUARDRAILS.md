@@ -12,14 +12,14 @@ Guardrails are defense in depth, not a boundary. Command-text rules miss wrapper
 
 | Piece | Where | Active when |
 |---|---|---|
-| Claude Code permissions and sandbox | [`.claude/settings.json`](../../.claude/settings.json): 84 deny (24 of them for Serena's writing, raw-file and memory tools, Phase 6), 48 ask, 7 allow rules (dev servers ask, matching `AGENTS.md` §2); Bash sandbox on (Seatbelt), strict (`allowUnsandboxedCommands: false`), `.githooks/` not writable by sandboxed commands | Any Claude Code session started in a checkout that has the file. The 7 allow rules need the workspace-trust prompt accepted once; deny and ask apply regardless |
+| Claude Code permissions and sandbox | [`.claude/settings.json`](../../.claude/settings.json): 84 deny (24 of them for Serena's writing, raw-file and memory tools, Phase 6), 53 ask, 7 allow rules (dev servers ask, matching `AGENTS.md` §2); Bash sandbox on (Seatbelt), strict (`allowUnsandboxedCommands: false`), `.githooks/` not writable by sandboxed commands | Any Claude Code session started in a checkout that has the file. The 7 allow rules need the workspace-trust prompt accepted once; deny and ask apply regardless |
 | Codex profile | [`codex-cardos.config.toml.example`](codex-cardos.config.toml.example), installed as `~/.codex/cardos.config.toml` | Only with `codex -p cardos`; Codex ignores a repo's `.codex/` in an untrusted project (Phase 4) |
 | Codex command rules (proposed) | [`codex-cardos.rules.example`](codex-cardos.rules.example) | Not installed: the only location that always loads is the global `~/.codex/rules/`, the maintainer's call |
 | Pre-commit hook | [`.githooks/pre-commit`](../../.githooks/pre-commit): blocks staged data and secret file types (even force-added) by count, never by name; runs `gitleaks git --staged`; fails closed without gitleaks | After `git config core.hooksPath .githooks` (set in this clone on 2026-10-18), in every checkout whose branch has `.githooks/` |
 | CI | [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml): jobs `build`, `gitleaks` (full history), `osv-scanner` (lockfile), `policy` (Opengrep, Conftest); actions pinned by SHA, binaries checksum-verified, read-only token | After the branch is pushed. Has not run yet |
 | Dependabot | [`.github/dependabot.yml`](../../.github/dependabot.yml): npm and GitHub Actions, weekly | After it reaches `main` on GitHub |
 | Ruleset on `main` | [`.github/rulesets/main.json`](../../.github/rulesets/main.json): no deletion or force push, pull request required, the four CI checks required | **Not applied.** Needs the maintainer's explicit approval, after CI has run once; it would also end direct commits to `main` |
-| Opengrep rules | [`.opengrep/rules.yml`](../../.opengrep/rules.yml): 7 rules from `AGENTS.md` §4 and §5 (no network calls outside `src/lib/`, no external URLs, Google origin only in `gmail.ts`, no raw HTML, only the theme key in browser storage, no `any`, no shell strings in `scripts/`) | CI job `policy`; locally with a downloaded binary |
+| Opengrep rules | [`.opengrep/rules.yml`](../../.opengrep/rules.yml): 11 rules from `AGENTS.md` §4 and §5 (no network calls outside `src/lib/`, no external URLs, Google origin only in `gmail.ts`, no raw HTML, only the theme key in browser storage, no `any`, no shell strings in `scripts/`) | CI job `policy`; locally with a downloaded binary |
 | Conftest policies | [`policy/`](../../policy/): the Claude settings keep their data denies; workflows set permissions, pin actions and drop checkout credentials; Dependabot covers both ecosystems | CI job `policy`; locally `policy/test.sh` |
 
 ## Risk class → enforcement
@@ -37,6 +37,12 @@ Guardrails are defense in depth, not a boundary. Command-text rules miss wrapper
 | CRITICAL deleting or bulk-modifying statements or Burnrate data | The read deny on those paths also blocks Edit and Write; sandboxed commands write only the worktree and temp; `curl`/`wget` to the API denied | Writes only in the workspace; deny on the data paths | — | API deletes by other means |
 | CRITICAL force push, push to `main`, history rewrite, `git add -f` | Deny | Proposed rules: forbid | Hook catches force-added data files; ruleset blocks force push (not applied) | Wrapper forms |
 | CRITICAL disabling checks or prompts | Ask on settings and `.gitignore` edits; `.githooks/` and `.git/config` not writable by sandboxed commands; strict sandbox ignores `dangerouslyDisableSandbox` | — | Hook blocks data file types even if `.gitignore` is weakened; CI runs regardless of local hooks | `--no-verify` or `git -c core.hooksPath=…`, Bash edits to `.gitignore`, Codex config edits |
+
+## Reconciliation update (2026-10-21 IST)
+
+The local ST Finance branch adds five Claude edit prompts for the new fee-source and spend-trend money files while retaining all existing deny rules. The browser-storage policy now permits writes to the new st-theme key and a read-only fallback to the old cardos-theme key. The external-URL policy keeps its general restriction and checks the fee-source module separately: only the six reviewed issuer-source URLs are allowed as literal sourceUrl values, and network calls in that module are prohibited.
+
+The 11-rule YAML parses and synthetic regex cases pass. An actual Opengrep scan of the reconciled source remains unverified because that binary is unavailable locally; the seven-rule pilot evidence below belongs to the earlier baseline. The Conftest settings fixtures still pass after the additional prompts.
 
 ## Negative tests (2026-10-18, synthetic files only)
 

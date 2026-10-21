@@ -1,18 +1,18 @@
 # AGENTS.md
 
-- **Purpose:** shared, provider-neutral rules for every AI agent working in CardOS. Codex CLI reads this file natively; Claude Code imports it from [CLAUDE.md](CLAUDE.md).
+- **Purpose:** shared, provider-neutral rules for every AI agent working in ST Finance (formerly CardOS). Codex CLI reads this file natively; Claude Code imports it from [CLAUDE.md](CLAUDE.md).
 - **Audience:** AI coding agents and the maintainer.
 - **Owner:** the maintainer.
 - **Related docs:** [CLAUDE.md](CLAUDE.md) · [.ai/INDEX.md](.ai/INDEX.md) · [.ai/CONTEXT.md](.ai/CONTEXT.md) · [.ai/CURRENT.md](.ai/CURRENT.md) · [docs/ai-engineering/README.md](docs/ai-engineering/README.md)
-- **How to validate:** re-run the commands in §2 and §8; check §1, §3 and §4 against `package.json`, `astro.config.mjs`, `tsconfig.json` and `src/lib/`. Verified 2026-10-17.
+- **How to validate:** re-run the commands in §2 and §8; check §1, §3 and §4 against `package.json`, `astro.config.mjs`, `tsconfig.json` and `src/lib/`. Rechecked 2026-10-21 IST on the local reconciliation branch.
 
 This repository is **public**: everything committed is published. Read §5 and §6 before you change anything.
 
 ## 1. Project
 
-CardOS is a local-first web UI for **Burnrate**, a separate local credit-card analytics app (FastAPI + SQLite, installed with Homebrew, listening on `127.0.0.1:8000`). Burnrate is **not** in this repo. CardOS has no database, backend or credentials of its own; it reads and writes Burnrate over HTTP.
+ST Finance is a local-first web UI for **Burnrate**, a separate local credit-card analytics app (FastAPI + SQLite, installed with Homebrew, listening on `127.0.0.1:8000`). Burnrate is **not** in this repo. ST Finance has no database, backend or credentials of its own; it reads and writes Burnrate over HTTP. Some script and storage identifiers retain the CardOS name for compatibility.
 
-Stack (installed versions, 2026-10-17): Astro 7.4 (static output) with React 19.3 islands, TypeScript 5.9 (strict preset), Tailwind CSS 4.3, lucide-react 1.58. Node.js >=22.22.0, from the `engines` field of the locked `astro` and `@astrojs/react` (the README's "Node.js 20+" is out of date). `package.json` declares most dependencies as `latest`, so `package-lock.json` is the source of truth.
+Stack (installed versions, 2026-10-21): Astro 7.4 (static output) with React 19.3 islands, TypeScript 5.9 (strict preset), Tailwind CSS 4.3, lucide-react 1.58. Node.js >=22.22.0, from the `engines` field of the locked `astro` and `@astrojs/react`. `package.json` pins all direct dependencies to exact versions, matched by `package-lock.json`.
 
 ## 2. Commands
 
@@ -22,6 +22,8 @@ Stack (installed versions, 2026-10-17): Astro 7.4 (static output) with React 19.
 | `npx tsc --noEmit` | Typecheck `.ts`/`.tsx` (`.astro` files are covered only by `npm run check`) | LOW | Yes |
 | `npm run check` | `astro check`: types including `.astro` files; writes `.astro/` | LOW | Yes |
 | `npm run build` | `astro check`, then static build to `dist/` | LOW | Yes |
+| `npm test` | Vitest unit tests in `src/lib/` using synthetic data and mocked fetch | LOW | Yes |
+| `npm run docs:test` / `docs:links` / `docs:routes:check` | Local documentation checks without external requests | LOW | Yes |
 | `gitleaks git --redact -v --no-banner .` | Scan the full history (all refs) | LOW | Yes |
 | `gitleaks dir --redact -v --no-banner .` | Scan the working tree, including untracked and ignored files (skips `node_modules/`) | LOW | Yes |
 | `gitleaks git --staged --redact -v --no-banner .` | Scan staged changes; run after staging, before committing | LOW | Yes |
@@ -31,17 +33,17 @@ Stack (installed versions, 2026-10-17): Astro 7.4 (static output) with React 19.
 | `npm ci` | Reinstalls dependencies from the lockfile, replacing `node_modules/` | MEDIUM | No, ask |
 | `npm run ai:worktree -- <new\|list\|handoff\|remove>` | One worktree and branch per agent task, with ownership and safe handoff ([runbook](.ai/runbooks/handoff.md)); never forces or deletes unmerged work | LOW | Yes, for your own tasks (Claude Code still asks: it runs outside the sandbox) |
 
-- Verified 2026-10-17: the first seven commands exit 0 on a clean tree (`npm run check`: 33 files, 0 errors, 0 warnings, 0 hints; `npm run build`: 12 pages). The three scans also exit 1 and print a redacted finding for a synthetic fake token in a scratch repo.
+- Earlier command and synthetic secret-scan evidence is recorded in [GUARDRAILS.md](docs/ai-engineering/GUARDRAILS.md). In the local reconciliation worktree on 2026-10-21 IST, `npm ci` installed the pinned dependencies, `npm test` passed 11/11, and `npm run build` checked 46 Astro files with 0 diagnostics and built 12 pages.
 - gitleaks: exit 0 = clean, 1 = findings. Keep `--redact` so secrets are never printed; `-v` prints finding details (without it you only get a count). On a finding: stop, don't rewrite history, tell the maintainer.
-- `dist/` and `.astro/` are gitignored. `astro check` (so also `npm run build`) can rewrite Vite's dependency cache in `node_modules/.vite/`; if `node_modules` is a symlink to another checkout, that write lands in the other checkout (observed 2026-10-18). Run Astro through the npm scripts (they set `ASTRO_TELEMETRY_DISABLED=1`). No test, lint or format commands exist yet. Guardrails (Phase 5, [GUARDRAILS.md](docs/ai-engineering/GUARDRAILS.md)): `.claude/settings.json` denies reads of Burnrate data and secrets and runs Bash in a sandbox; `.githooks/pre-commit` (enabled with `git config core.hooksPath .githooks`) blocks data files and secrets; CI runs build, gitleaks, osv-scanner and policy checks once pushed. They are defense in depth: the rules here still apply.
+- `dist/` and `.astro/` are gitignored. `astro check` (so also `npm run build`) can rewrite Vite's dependency cache in `node_modules/.vite/`; if `node_modules` is a symlink to another checkout, that write lands in the other checkout (observed 2026-10-18). Run Astro through the npm scripts (they set `ASTRO_TELEMETRY_DISABLED=1`). Vitest and documentation checks exist; no lint or format command exists. Guardrails (Phase 5, [GUARDRAILS.md](docs/ai-engineering/GUARDRAILS.md)): `.claude/settings.json` denies reads of Burnrate data and secrets and runs Bash in a sandbox; `.githooks/pre-commit` (enabled with `git config core.hooksPath .githooks`) blocks data files and secrets; CI runs build, gitleaks, osv-scanner and policy checks once pushed. They are defense in depth: the rules here still apply.
 
 ## 3. Architecture in brief
 
 - Browser → Astro dev server (`127.0.0.1:4321`) → `/api/*` proxied by Vite (`astro.config.mjs`) → Burnrate (`127.0.0.1:8000`). The UI calls only relative `/api/*` routes.
-- 12 pages in `src/pages/`; all but `more.astro` render one React view from `src/components/` inside `src/layouts/AppShell.astro` (sidebar, mobile nav, theme toggle, `BurnrateStatus`). Views hydrate in the browser (`client:load`; card detail uses `client:only="react"`).
+- 12 pages in `src/pages/`; all but `more.astro` render one React view from `src/components/` inside `src/layouts/AppShell.astro` (sidebar, mobile nav, theme toggle, `AppStatus`). Views hydrate in the browser (`client:load`; card detail uses `client:only="react"`).
 - `src/lib/live.ts` is the data layer: a shared in-memory store with `useLiveData`/`useLiveQuery` (reads) and `apiMutate` (writes). It refreshes on load, on tab focus and every 45 s; while a statement is processing, it polls statements and processing logs every 5 s. `src/lib/api.ts` holds types, `apiGet` and the currency/date helpers; `src/lib/gmail.ts` wraps Burnrate's Gmail endpoints.
-- The browser persists only the theme (`localStorage` key `cardos-theme`); financial data stays in memory.
-- `scripts/` holds Node launchers that manage Burnrate's Homebrew service; `patches/` holds local patches for the Homebrew-installed Burnrate (see [ADR 0001](.ai/decisions/0001-local-burnrate-patch.md); the README covers only the first patch).
+- The browser persists only the theme (`localStorage` key `st-theme`, with a read-only fallback to legacy `cardos-theme`); financial data stays in memory.
+- `scripts/` holds Node launchers that manage Burnrate's Homebrew service; `patches/` holds local patches for the Homebrew-installed Burnrate (see the historical [ADR 0001](.ai/decisions/0001-local-burnrate-patch.md) and the README's patch overview).
 - More detail: [.ai/CONTEXT.md](.ai/CONTEXT.md).
 
 ## 4. Code conventions
@@ -52,7 +54,7 @@ Observed in the code. Match them.
 - **Styling:** hand-written CSS classes in `src/styles/`; `global.css` defines the dark/light tokens as CSS variables, so use those (`--surface`, `--line`, `--text`, `--muted`, `--accent`, ...) and don't reference undefined ones. Tailwind is loaded but components use no utility classes. Icons come from `lucide-react`.
 - **TypeScript:** `astro/tsconfigs/strict` with `verbatimModuleSyntax`, so import types with `import type` or an inline `type`. Avoid `any` and `@ts-ignore`.
 - **Money and dates:** never invent or estimate a figure; show `Unknown` or an "unavailable" state as the code does. Format with `formatCurrency` (en-IN) and `formatDate`/`daysUntilDate`/`localDateISO` (billing dates are IST).
-- **Network:** only relative `/api/*` calls; the sole external address is Google's sign-in URL, origin-checked in `src/lib/gmail.ts`. Add no analytics, telemetry, CDN assets or other external requests without the maintainer's explicit approval.
+- **Network:** app data calls use only relative `/api/*` paths. Google's sign-in URL is origin-checked in `src/lib/gmail.ts`. `src/lib/publicFees.ts` contains published bank-source URLs rendered as links a user may open; those links are not automatic fetches. Add no analytics, telemetry, CDN assets or other external requests without the maintainer's explicit approval.
 - **Style:** 2-space indent, single quotes, semicolons, default-exported components, dense compact JSX. Match the surrounding code and don't reformat code you aren't changing (no formatter or linter is configured).
 - **Scope:** no new dependencies without approval; no app behavior changes inside infrastructure or docs work.
 
@@ -79,13 +81,13 @@ Why: on 2026-10-17 two agents edited one working tree; one agent's commit swept 
 
 ## 7. Risk classes and approvals
 
-| Class | CardOS examples | Approval |
+| Class | ST Finance examples | Approval |
 |---|---|---|
 | LOW | Read code; edit docs and `.ai/` notes (not the constitution, accepted specs or accepted ADRs); draft new specs; run typecheck, build and gitleaks scans | None: allowed |
 | MEDIUM | Feature or UI changes in `src/`; `scripts/` changes; adding or upgrading dependencies (`package*.json`, `npm ci`); refactors | Plan first; the maintainer approves before merge |
 | HIGH | Anything touching Burnrate: `patches/` ([ADR 0001](.ai/decisions/0001-local-burnrate-patch.md)), its config, restarting its service, `npm run cardos`, write calls to its API (settings, PDF unlock) | Explicit approval before acting |
 | HIGH | The Gmail/OAuth flow: `src/lib/gmail.ts`, `scripts/configure-gmail.mjs`, `npm run gmail:setup` (run only by the maintainer, §2) | Explicit approval before acting |
-| HIGH | Money or due-date logic shown to the user: `src/lib/api.ts` helpers, urgency in `BillsView.tsx`, totals in `Dashboard.tsx` | Explicit approval before acting |
+| HIGH | Money or due-date logic shown to the user: `src/lib/api.ts` helpers, `src/lib/publicFees.ts`, `src/lib/trends.ts`, `SixMonthTrend.tsx`, fee presentation in `FeeOptimizerView.tsx` and `CardDetail.tsx`, urgency in `BillsView.tsx`, totals in `Dashboard.tsx` | Explicit approval before acting |
 | HIGH | CI/workflow, agent-permission or agent-rule files: `AGENTS.md`, `CLAUDE.md`, agent settings; changing the constitution (`.specify/memory/constitution.md`); marking a spec or ADR Accepted, or changing an accepted spec in `specs/` or an accepted ADR in `.ai/decisions/` (these outrank code once ratified or accepted, §9) | Explicit approval before acting |
 | HIGH | Publishing to the public repo: pushing any branch; creating GitHub issues, pull requests, releases or comments (`gh`, `/speckit-taskstoissues` / `$speckit-taskstoissues`) | Explicit approval before acting |
 | CRITICAL | Deleting or bulk-modifying statements, files or Burnrate data; exposing secrets; pushing or force-pushing `main`; rewriting history; disabling security checks (gitleaks, `.gitignore` rules, permission prompts) | Never without explicit, specific approval; agents never approve their own exceptions |

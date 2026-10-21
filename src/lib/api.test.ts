@@ -54,6 +54,6 @@ it('requests JSON without caching and normalizes HTTP failures', async () => {
   expect(vi.getTimerCount()).toBe(0);
 
   fetchMock.mockImplementation(async () => new Response(null, { status: 503 }));
-  await expect(apiGet('/api/synthetic')).rejects.toThrow('Burnrate temporarily unavailable');
+  await expect(apiGet('/api/synthetic')).rejects.toThrow('ST Finance temporarily unavailable');
   expect(vi.getTimerCount()).toBe(0);
 });

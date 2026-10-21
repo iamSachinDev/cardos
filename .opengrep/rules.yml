@@ -29,8 +29,40 @@ rules:
       approval (AGENTS.md §4 Network). Loopback (127.0.0.1, localhost) is allowed.
     paths:
       include: [src/]
+      exclude: [src/lib/publicFees.ts]
     pattern-regex: '(?i)(https?:)?//(?!127\.0\.0\.1|localhost|accounts\.google\.com)[a-z0-9-]+(\.[a-z0-9-]+)+(?::\d+)?/?'
     # Known false-positive shape: SVG xmlns (http://www.w3.org/2000/svg) and prose comments; none exist today.
+
+  - id: cardos-public-fee-sources-only
+    languages: [generic]
+    severity: ERROR
+    message: Published fee links must be one of the reviewed issuer URLs in a sourceUrl literal.
+    paths:
+      include: [src/lib/publicFees.ts]
+    pattern-regex: '(?m)^(?!\s*sourceUrl\s*:\s*''https://(?:www\.axisbank\.com/docs/default-source/default-document-library/credit-cards/terms-and-conditions-for-axis-bank-rewards-credit-card\.pdf|www\.hdfc\.bank\.in/credit-cards/(?:regalia-gold-credit-card|hdfc-bank-upi-rupay-credit-card)/fees-and-charges|www\.icici\.bank\.in/personal-banking/cards/credit-card/hpcl-coral-credit-card|www\.sc\.bank\.in/credit-cards/tariffs-and-charges/|www\.sbicard\.com/en/most-important-terms-and-conditions\.page)''\s*,?\s*$).*?(https?:)?//(?!127\.0\.0\.1|localhost)[a-z0-9-]+(\.[a-z0-9-]+)+(?::\d+)?/?'
+
+  - id: cardos-public-fee-source-literal-only
+    languages: [generic]
+    severity: ERROR
+    message: A published fee sourceUrl must be a reviewed HTTPS literal, not a variable or expression.
+    paths:
+      include: [src/lib/publicFees.ts]
+    pattern-regex: '(?m)^(?![ \t]*sourceUrl[ \t]*:[ \t]*(?:string[ \t]*;|''https://))[ \t]*sourceUrl[ \t]*:.*$'
+
+  - id: cardos-public-fees-no-network
+    languages: [typescript]
+    severity: ERROR
+    message: Published fee sources are user-opened links; this module must not make network calls.
+    paths:
+      include: [src/lib/publicFees.ts]
+    pattern-either:
+      - pattern: fetch(...)
+      - pattern: window.fetch(...)
+      - pattern: globalThis.fetch(...)
+      - pattern: new XMLHttpRequest(...)
+      - pattern: navigator.sendBeacon(...)
+      - pattern: new WebSocket(...)
+      - pattern: new EventSource(...)
 
   - id: cardos-google-origin-only-in-gmail
     languages: [generic]
@@ -55,11 +87,20 @@ rules:
     languages: [generic]
     severity: ERROR
     message: >-
-      The browser may persist only the theme (localStorage key 'cardos-theme'); financial data stays in memory
+      The browser may persist only the theme (new key 'st-theme'; legacy 'cardos-theme' may be read);
+      financial data stays in memory
       (AGENTS.md §3, §5). No other localStorage key, no sessionStorage, IndexedDB or cookies.
     paths:
       include: [src/]
-    pattern-regex: '(?x) localStorage\.\w+\(\s*(?![''"]cardos-theme[''"]) | \bsessionStorage\b | \bindexedDB\b | document\.cookie'
+    pattern-regex: '(?x) localStorage\.\w+\(\s*(?![''"](?:st-theme|cardos-theme)[''"]) | \bsessionStorage\b | \bindexedDB\b | document\.cookie'
+
+  - id: cardos-legacy-theme-read-only
+    languages: [generic]
+    severity: ERROR
+    message: The legacy cardos-theme key may be read for migration, but new writes use st-theme.
+    paths:
+      include: [src/]
+    pattern-regex: 'localStorage\.setItem\(\s*[''"]cardos-theme[''"]'
 
   - id: cardos-no-any-or-ts-ignore
     languages: [generic]

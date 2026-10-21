@@ -12,13 +12,13 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 
 | Field | Value |
 |---|---|
-| Phase | 12: Integration verification and bootstrap, partially implemented ([status](../docs/ai-engineering/PHASE-STATUS.md#p12-integration-verification-and-bootstrap)); the local clean-checkout pass and generic bootstrap are ready. Phases 10, 9, 8 and 5 remain partially implemented. |
-| Chunk | [INTEGRATION-BOOTSTRAP.md](../docs/ai-engineering/INTEGRATION-BOOTSTRAP.md) records the Phase 2–11 matrix and a safe reusable agent foundation. |
-| Branches / worktree | `ai/codex/integration-bootstrap` in `../cardos-wt/codex-integration-bootstrap`, based on `ai/codex/production`; earlier phases are stacked from `main` at `e7598889`. None of these branches is merged or pushed. This clone has `core.hooksPath=.githooks` set. |
-| Owner | Codex owns the Phase 12 task branch and its [task file](tasks/integration-bootstrap.md); the maintainer reviews before merge or publication. |
-| Main checkout | `../cardos` on `main` has seven newer commits, including the ST Finance rebrand. Those changes are not reconciled with this AI-OS branch; do not edit `main` from here. |
+| Phase | 12: Integration verification and bootstrap, partially implemented ([status](../docs/ai-engineering/PHASE-STATUS.md#p12-integration-verification-and-bootstrap)); the original clean-checkout pass and generic bootstrap are ready. Phases 10, 9, 8 and 5 remain partially implemented. |
+| Chunk | [INTEGRATION-BOOTSTRAP.md](../docs/ai-engineering/INTEGRATION-BOOTSTRAP.md) records the historical Phase 2–11 pass. The current task reconciles those AI-OS changes with the committed ST Finance app. |
+| Branches / worktree | `ai/codex/main-reconciliation` in `../cardos-wt/codex-main-reconciliation`, based on `ai/codex/integration-bootstrap`; earlier phases are stacked from `main` at `e7598889`. These branches remain local. This clone has `core.hooksPath=.githooks` set. |
+| Owner | Codex owns the [reconciliation task](tasks/main-reconciliation.md). The maintainer reviews before merge or publication. |
+| Main checkout | `../cardos` on `main` is clean at `18ccecd0`, eight commits past the AI-OS base. The local reconciliation branch is integrating those committed changes; do not edit `main` from here. |
 | Specification | [`specs/001-gmail-sync/spec.md`](../specs/001-gmail-sync/spec.md): Draft (retroactive), pending the maintainer's acceptance. Constitution [`.specify/memory/constitution.md`](../.specify/memory/constitution.md) v1.0.0: Proposed, pending ratification |
-| Last updated | 2026-10-20 |
+| Last updated | 2026-10-21 IST |
 
 ## Done
 
@@ -35,6 +35,7 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 - **Phase 10 local chunk** (`ai/codex/dashboard`): [DASHBOARD.md](../docs/ai-engineering/DASHBOARD.md) gathers status, local check evidence, Actions navigation and the synthetic Promptfoo result. Both installed CLIs document OpenTelemetry export; no collector or live export was enabled. Remote Actions evidence remains open.
 - **Phase 11 local chunk** (`ai/codex/production`): direct dependency declarations match the locked versions, and [PRODUCTION.md](../docs/ai-engineering/PRODUCTION.md) covers a stopped-service Burnrate snapshot and restore. No live financial data was accessed and no backup was run.
 - **Phase 12 local chunk** (`ai/codex/integration-bootstrap`): clean `npm ci`, tests, build, policy checks and generic bootstrap in synthetic repositories. [INTEGRATION-BOOTSTRAP.md](../docs/ai-engineering/INTEGRATION-BOOTSTRAP.md) lists each earlier phase's evidence and remaining gates. OSV was unavailable because its service could not be resolved.
+- **Current reconciliation** (`ai/codex/main-reconciliation`): merged committed ST Finance app changes into the local AI-OS branch, aligned package metadata, restored Gmail setup guidance, corrected the spend trend's missing-month presentation, and updated agent/policy rules with the maintainer's approval. Combined checks and limits are in the [task record](tasks/main-reconciliation.md).
 
 ## Checks (details and dates in PHASE-STATUS)
 
@@ -50,15 +51,15 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 
 ## Known problems (not fixed; each needs the maintainer)
 
-1. **Root `README.md`:** it still omits `patches/burnrate-password-reparse-preserve.patch` and claims XLS import (spec G-4). The Phase 11 branch corrects the Node.js requirement to >=22.22.0; older branches and `main` still say "Node.js 20+" until merged. On `main` it now documents the one-year and personal-fee patches.
+1. **Root `README.md`:** the ST Finance README gives a local patch overview and Node.js >=22.22.0. It does not include patch-application steps; inspect each patch against the installed Burnrate version before applying it privately. Historical spec G-4 refers to the old README.
 2. **Skipped files may show as failed imports.** The Burnrate patch logs skipped non-card and ignored files with status "error", so the Statements page may list them as "Parse failed" after each Burnrate restart (spec G-17). Changing patches is HIGH.
 3. **Card hints in public files:** Burnrate patch comments include a real card-issuer prefix in an example filename and hint at a card product (public since `89af6c1c`); ADR 0001's Context hints at which issuers are in use.
 4. **`.gitignore` gaps:** no patterns for a downloaded Google OAuth client JSON or for local agent settings. Phase 5's hook and Claude deny rules now block the client JSON; the `.gitignore` lines themselves are the maintainer's call.
 5. **Possible UI bug:** `src/styles/optimize.css` uses colour variables that no stylesheet defines.
-6. **AI-OS docs are behind `main`.** Newer `main` commits include one-year Gmail scanning, personal-fee handling, a spending trend and the ST Finance rebrand. Spec 001 is baselined at `e7598889` and still describes 120 days and a 200-message cap. Reconcile the branches and review spec 001, ADR 0001, `.ai/CONTEXT.md`, `INDEX.md` and agent rules before treating the AI-OS branch as current-main evidence.
+6. **Historical specification and ADR need review.** Draft spec 001 and accepted ADR 0001 describe the older `e7598889` baseline, including a 120-day/200-message Gmail scan. The current agent rules and local policy now describe the ST Finance app, with approved source-link and theme-key handling. The accepted ADR was not edited; that would require separate explicit approval. Actual Opengrep runtime verification remains open because its binary is unavailable locally. CI remains local-only by the maintainer's direction.
 7. **`.serena/` tracking:** `.serena/` is gitignored, but two of its files are tracked (Phase 6).
 8. **`node_modules` symlink:** in `../cardos-ai-os` it points to the main checkout and shows as untracked. Stage explicit paths only; Astro commands here can rewrite the main checkout's Vite cache.
-9. **Spec 001 gaps G-1 to G-17** list further mismatches between the README, the code and the patches.
+9. **Spec 001 gaps G-1 to G-17** describe the older baseline; revalidate them against the reconciled app before treating them as current gaps.
 
 ## Outstanding decisions (maintainer)
 
@@ -76,6 +77,6 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 6. Phase 9 local checks are on `ai/codex/evaluation-quality`. Review the tests, pilot and dependency; the CI test gate remains deferred under the maintainer's local-only instruction.
 7. Phase 10 local status view is on `ai/codex/dashboard`. Review it; verify the Actions check view after publication, if the maintainer later authorizes that step. Keep telemetry deferred until a privacy-reviewed source and destination exist.
 8. Phase 11 dependency pins and backup runbook are on `ai/codex/production`. Review the local branch; the maintainer rehearses backup and restore privately before relying on it.
-9. Phase 12's local pass and bootstrap are on `ai/codex/integration-bootstrap`. Reconcile the newer ST Finance `main` before full integration verification; P5/P8/P9/P10 remote and CI gates remain open under the local-only instruction.
+9. Review the local reconciliation branch and its [task record](tasks/main-reconciliation.md). P5/P8/P9/P10 remote and CI gates remain open under the local-only instruction; review accepted ADR 0001 separately.
 
 Relevant completed commit: `c0b036a4` on `ai-os/phase-7`.

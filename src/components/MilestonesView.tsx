@@ -26,12 +26,12 @@ export default function MilestonesView() {
   const milestones = state.data?.milestones || [];
 
   if (state.loading && !state.data) return <div className="opt-grid" aria-label="Loading milestones">{[0, 1].map(index => <div className="opt-panel opt-skeleton" key={index}><div className="loading" /><div className="loading" /></div>)}</div>;
-  if (state.error && !state.data) return <div className="opt-empty"><Target size={24} /><h2>Milestones are temporarily unavailable</h2><p>CardOS will reconnect to your local Burnrate data automatically.</p></div>;
+  if (state.error && !state.data) return <div className="opt-empty"><Target size={24} /><h2>Milestones are temporarily unavailable</h2><p>ST Finance will reconnect to your local data automatically.</p></div>;
 
   return <div className="opt-page">
     <section className="opt-feature">
       <div className="opt-feature-icon"><Flag size={25} strokeWidth={1.7} /></div>
-      <div><div className="eyebrow">Card goals</div><h2>Your next milestone</h2><p>Track the targets and benefits recorded in Burnrate. Amounts appear here only when a milestone has been set up.</p></div>
+      <div><div className="eyebrow">Card goals</div><h2>Your next milestone</h2><p>Track the targets and benefits recorded in ST Finance. Amounts appear here only when a milestone has been set up.</p></div>
       <div className="opt-feature-count"><strong>{state.data?.total ?? milestones.length}</strong><span>tracked</span></div>
     </section>
     {milestones.length ? <div className="opt-grid section">{milestones.map((item, index) => {
@@ -45,6 +45,6 @@ export default function MilestonesView() {
         {item.periodKind && <div className="opt-data"><span>Period</span><strong className="opt-small">{humanize(item.periodKind)}</strong></div>}
         {item.rewardDescription && <p className="opt-note">{item.rewardDescription}</p>}
       </article>;
-    })}</div> : <div className="opt-empty section"><Target size={26} strokeWidth={1.6} /><h2>No milestones recorded yet</h2><p>When you add a card milestone in Burnrate, its verified target and benefit will appear here.</p><a href="/cards">Explore your cards <ArrowUpRight size={16} /></a></div>}
+    })}</div> : <div className="opt-empty section"><Target size={26} strokeWidth={1.6} /><h2>No milestones recorded yet</h2><p>When you add a card milestone, its verified target and benefit will appear here.</p><a href="/cards">Explore your cards <ArrowUpRight size={16} /></a></div>}
   </div>;
 }

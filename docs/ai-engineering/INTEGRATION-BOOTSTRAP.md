@@ -41,9 +41,13 @@ Final documentation links checked 345 local links in 29 Markdown files with 0 is
 
 P5, P8, P9 and P10 remain **Partially implemented**. This pass confirms the local checks and recorded artifacts; it does not turn their remote or maintainer-owned criteria into passing results.
 
-## Branch integration limit
+## Branch reconciliation
 
-The AI Engineering OS branches are stacked from an older `main` base. Current `main` has seven later commits, including the ST Finance rebrand (`d5c743c1`); this Phase 12 branch has the AI-OS commits and has **not** merged or rebased those main changes. Its clean-checkout result applies to this branch, not to the combined current-main app. Reconcile the branches and recheck project-specific agent rules, docs, package metadata and app tests before proposing a merge. `AGENTS.md` and CI edits require separate maintainer approval; the maintainer previously chose to keep CI changes local for now.
+The original AI Engineering OS branches were stacked from `main` at `e7598889`. The 2026-10-20 clean-checkout result above applies to `ai/codex/integration-bootstrap` only. By 2026-10-21, `main` had eight later commits through `18ccecd0`, including the ST Finance rebrand, one-year Gmail patch, personal-fee support and six-month trend.
+
+`ai/codex/main-reconciliation` is the separate local task branch for combining that committed app with the Phase 12 foundation. It preserves the ST Finance user-facing app and package name, retains exact dependency pins and AI scripts, and updates current-facing notes. The original Phase 12 results are historical evidence, not a pass for the combined app. With the maintainer's explicit approval, this branch also corrects agent rules, Claude prompts and local Opengrep rules for the new app. Accepted ADR 0001 still describes the older patch baseline and awaits separate review. CI wiring remains deferred under the maintainer's local-only instruction.
+
+The combined branch's approved `npm ci` installed 307 packages; npm reported 0 vulnerabilities. On 2026-10-21 at 19:14 IST, `npm test` passed 14/14 synthetic tests in four files, and `npm run build` checked 47 Astro files with no diagnostics and built 12 pages. The local docs checker found 350 links with no issues. The 11-rule Opengrep YAML parses, and targeted synthetic regex cases for published fee links and theme storage pass. An actual Opengrep scan is still open because its binary is unavailable locally. No Burnrate service, private data, env file, key, statement or live API was accessed during reconciliation.
 
 ## Reusable foundation bootstrap
 
