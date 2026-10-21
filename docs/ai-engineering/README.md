@@ -39,7 +39,7 @@ The AI Engineering OS is the infrastructure that lets Claude Code and Codex work
 | [`.ai/runbooks/handoff.md`](../../.ai/runbooks/handoff.md) | How to start, hand off, resume and finish an agent task. |
 | [`scripts/ai-worktree.mjs`](../../scripts/ai-worktree.mjs) | `npm run ai:worktree`: one worktree and branch per agent task, ownership in branch names and `.ai/tasks/<task>.md`, safe handoff. |
 | [`MCP-REGISTRY.md`](MCP-REGISTRY.md) | The MCP servers allowed for CardOS work, per agent: pins, limits, and how to add one. |
-| [`GUARDRAILS.md`](GUARDRAILS.md) | How each risk class is enforced: Claude Code and Codex deny rules and sandboxes, the pre-commit hook, CI, Dependabot, the (unapplied) ruleset, Opengrep and Conftest. |
+| [`GUARDRAILS.md`](GUARDRAILS.md) | How each risk class is enforced: Claude Code and Codex deny rules and sandboxes, the pre-commit hook, CI, Dependabot, the imported (disabled) ruleset, Opengrep and Conftest. |
 | [`model-policy.yaml`](../../model-policy.yaml) | Phase 7 task tiers, Claude/Codex model and effort choices, escalation rules and verification sources. |
 | [`DOCS-AUTOMATION.md`](DOCS-AUTOMATION.md) | Phase 8 generated documentation, link and impact checks, and Not applicable document types. |
 | [`ROUTES.md`](ROUTES.md) | Generated inventory of Astro page routes and source files. |
