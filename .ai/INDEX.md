@@ -45,7 +45,7 @@ Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **C
 
 - README lists the patch directory but does not provide patch-application instructions. Verify compatibility with the locally installed Burnrate version before using a patch; see the historical [ADR 0001](decisions/0001-local-burnrate-patch.md).
 - The draft Gmail spec and accepted ADR 0001 predate the one-year and personal-fee patches. Their historical claims must not be used as current runtime guidance until reviewed.
-- Agent and policy files were updated for ST Finance in the local reconciliation branch. Actual Opengrep execution remains unverified until its binary is available; `.ai/CURRENT.md` tracks that gate.
+- Agent and policy files were updated for ST Finance in the local reconciliation branch. The actual Opengrep scan now runs clean (2026-10-21); `.ai/CURRENT.md` tracks that gate.
 
 ## How to retrieve
 

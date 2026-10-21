@@ -70,7 +70,7 @@ rules:
     message: Google's sign-in origin may appear only in src/lib/gmail.ts, where it is origin-checked (AGENTS.md §4 Network).
     paths:
       include: [src/]
-      exclude: [src/lib/gmail.ts]
+      exclude: [src/lib/gmail.ts, src/lib/gmail.test.ts] # the test asserts that origin check
     pattern-regex: 'accounts\.google\.com'
 
   - id: cardos-no-dangerous-html

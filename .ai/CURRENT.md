@@ -56,7 +56,7 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 3. **Card hints in public files:** Burnrate patch comments include a real card-issuer prefix in an example filename and hint at a card product (public since `89af6c1c`); ADR 0001's Context hints at which issuers are in use.
 4. **`.gitignore` gaps:** no patterns for a downloaded Google OAuth client JSON or for local agent settings. Phase 5's hook and Claude deny rules now block the client JSON; the `.gitignore` lines themselves are the maintainer's call.
 5. **Possible UI bug:** `src/styles/optimize.css` uses colour variables that no stylesheet defines.
-6. **Historical specification and ADR need review.** Draft spec 001 and accepted ADR 0001 describe the older `e7598889` baseline, including a 120-day/200-message Gmail scan. The current agent rules and local policy now describe the ST Finance app, with approved source-link and theme-key handling. The accepted ADR was not edited; that would require separate explicit approval. Actual Opengrep runtime verification remains open because its binary is unavailable locally. CI remains local-only by the maintainer's direction.
+6. **Historical specification and ADR need review.** Draft spec 001 and accepted ADR 0001 describe the older `e7598889` baseline, including a 120-day/200-message Gmail scan. The current agent rules and local policy now describe the ST Finance app, with approved source-link and theme-key handling. The accepted ADR was not edited; that would require separate explicit approval. Opengrep: 2026-10-21: the pinned Opengrep 1.31.0 scan (`--severity ERROR src scripts`) first exited 1 on two lines of `src/lib/gmail.test.ts`, which asserts the Google origin check; the `cardos-google-origin-only-in-gmail` rule now also excludes that test file, and the scan exits 0. CI remains local-only by the maintainer's direction.
 7. **`.serena/` tracking:** `.serena/` is gitignored, but two of its files are tracked (Phase 6).
 8. **`node_modules` symlink:** in `../cardos-ai-os` it points to the main checkout and shows as untracked. Stage explicit paths only; Astro commands here can rewrite the main checkout's Vite cache.
 9. **Spec 001 gaps G-1 to G-17** describe the older baseline; revalidate them against the reconciled app before treating them as current gaps.
@@ -70,7 +70,7 @@ Keep this file short: state and pointers, no secrets, no transcripts, no persona
 ## Next steps
 
 1. The maintainer reviews the stacked AI-OS branches (merging `ai-os/phase-7` brings in phases 2 to 7). After the merge, Codex's default Serena in CardOS becomes read-only too.
-2. Phase 5 decisions: apply the `main` ruleset after a push and a first CI run; install the Codex command rules or not.
+2. Phase 5: the Codex command rules are active (`.codex/rules/cardos.rules`); left: a first CI run on a draft PR, then the `main` ruleset in evaluate mode, active only after the maintainer confirms.
 3. Phase 6 decisions: accept the Serena 2.0.0 pin (5 days old when pinned) or wait until 2026-10-27; pin Serena in the default Codex config; accept ADR 0002.
 4. Phase 7 model routing is implemented on `ai-os/phase-7`: policy, CLI capability catalog, dry-run checker, Conftest rules and fixtures. Local checks pass (see Phase 7 status). The maintainer reviews the local branch before merge or publication.
 5. Phase 8 local docs checks are on `ai/codex/docs-automation`. The route inventory, link checker and advisory impact command work locally. CI wiring remains deferred.
