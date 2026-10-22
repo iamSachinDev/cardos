@@ -78,7 +78,7 @@ What remains is small: the Deferred ruleset and Dependabot pull requests #2 to #
 1. Dependabot pull requests #2 to #4: review each, one at a time, with `npm ci`, `npm test` and `npm run build`. **#4 is a TypeScript major bump (5.9 to 7.0)** and needs care: check `astro check`, `npx tsc --noEmit` and the Astro, Vitest and `@astrojs/react` compatibility before merging. Read #2 and #3 for what they change before deciding.
 2. P5-C5: the `protect-main` ruleset stays disabled by choice. Revisit when PR-only changes to `main` are wanted; then P9's "CI gates block a failing change" can pass.
 3. Record the GitHub result of the merged CI wiring (pull request #5) in PHASE-STATUS and the dashboard: P8 becomes Implemented and verified when the run, including the advisory `docs:impact` step, passed. This task could not query GitHub.
-4. Run the unmodified `npm run build` once outside the Bash sandbox: inside it, the hashed stylesheet `AppShell.DB-s7gJn.css` matches the sandbox's `*.db-*` rule and Astro's asset move fails (the checks and an equivalent build pass; see the final pass).
+4. Done (pull request for `ai/claude/sandbox-db-rule`): the sandbox's `*.db-*` deny is narrowed to database journal suffixes, so `npm run build` works inside Claude Code's sandbox again.
 5. Model drift: the Claude Code on `PATH` is 2.1.245 and a second install is 2.1.307; the catalog verifies 2.1.303. `npm run ai:models` exits 1 for either. Re-verify, update `policy/data/cli-capabilities.json`, and remove or update the older install.
 6. Keep telemetry Deferred until a privacy-reviewed source and destination exist. Remove superseded worktrees with `npm run ai:worktree -- remove` once their work is on `main`.
 
