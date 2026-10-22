@@ -23,3 +23,4 @@
 
 - 2026-10-21 new: ai/claude/finish-phases from ai/claude/phase5-finish
 - 2026-10-21 CI wiring committed (`8b003986`); status docs updated
+- 2026-10-21 pull request #5 merged as `2429eeb6`; the governance items listed under Not done were decided on 2026-10-21 and recorded in `ai/claude/phase12-close` (see [phase12-close](phase12-close.md))
