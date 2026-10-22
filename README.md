@@ -37,18 +37,6 @@ npm run dev
 
 The app will be available at `http://127.0.0.1:4321`.
 
-`npm run cardos` is the local launcher for installations that use the Homebrew Burnrate service. It checks the service and starts the UI; `npm run dev` runs only the UI in the foreground.
-
-### Gmail statements (optional)
-
-Gmail sync uses the separate local Burnrate service and requests read-only Gmail access. The maintainer configures a Google OAuth **Web application** client for the Gmail read-only scope, with redirect URI `http://127.0.0.1:8000/api/gmail/oauth/callback`. Keep the downloaded client JSON outside this repository. Then run:
-
-```bash
-npm run gmail:setup -- /absolute/path/to/client.json
-```
-
-This command stores the OAuth client settings in Burnrate's private local configuration and restarts that service. In ST Finance Settings, choose **Connect Gmail** and complete Google's consent. After connection, **Check Gmail** starts an on-demand statement check. The one-year scan in [`patches/burnrate-gmail-one-year.patch`](patches/burnrate-gmail-one-year.patch) applies only when that patch has been applied to a compatible Burnrate installation. Keep the downloaded client JSON and Burnrate configuration out of Git.
-
 ### Build & Check
 
 ```bash
@@ -63,11 +51,7 @@ npm run build
 
 ST Finance is designed for personal privacy:
 
-- Imported financial records are handled by the local Burnrate service; this frontend has no separate finance database.
-- Optional Gmail sync contacts Google to read statement emails after you connect it.
-- The app has no third-party tracking, analytics or app-operated remote database.
-- OAuth credentials belong in Burnrate's private local configuration, never in source code or a Git commit.
-
-## Burnrate patch
-
-The local Burnrate service is maintained separately from this frontend. The files in [`patches/`](patches/) record local fixes, including statement handling, a one-year Gmail scan, and personal annual-fee support. Installing this frontend does not apply those patches to Burnrate. Review each patch against the installed Burnrate version before applying it, and keep OAuth credentials in the local service configuration.
+- All financial data remains on your local machine.
+- No third-party tracking, analytics, or app-operated remote database storage.
+- Optional Gmail sync contacts Google to read statement emails only after you connect it.
+- Credentials and configuration are maintained locally via `.env` files and never committed to version control.

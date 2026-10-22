@@ -26,16 +26,16 @@ The AI Engineering OS is the infrastructure that lets Claude Code and Codex work
 | [`.ai/CONTEXT.md`](../../.ai/CONTEXT.md) | Verified architecture: topology, module map, data flow, endpoints, scripts. |
 | [`.ai/INDEX.md`](../../.ai/INDEX.md) | Knowledge map: which document to load for which task. |
 | [`.ai/CURRENT.md`](../../.ai/CURRENT.md) | Session summary: state, ownership, next steps. |
-| [`.ai/decisions/0001-local-burnrate-patch.md`](../../.ai/decisions/0001-local-burnrate-patch.md) | Decision record: why Burnrate is patched locally. |
+| [`.ai/decisions/0001-local-burnrate-patch.md`](../../.ai/decisions/0001-local-burnrate-patch.md) | Decision record (Accepted 2026-10-21): why Burnrate is patched locally. |
 | [`.ai/LIFECYCLE.md`](../../.ai/LIFECYCLE.md) | Lifecycle rules for `.ai/` files and local agent memory: who creates, updates, reviews and retires each, size limits, what never goes in. |
-| [`.ai/decisions/0002-agent-memory.md`](../../.ai/decisions/0002-agent-memory.md) | Decision record (Proposed): ai-memory deferred; versioned `.ai/` handoffs are the shared memory. |
+| [`.ai/decisions/0002-agent-memory.md`](../../.ai/decisions/0002-agent-memory.md) | Decision record (Accepted 2026-10-21): ai-memory deferred; versioned `.ai/` handoffs are the shared memory. |
 | [`IMPLEMENTATION-ROADMAP.md`](IMPLEMENTATION-ROADMAP.md) | Profile, tool decisions, target architecture, 12-phase plan. |
 | [`PHASE-STATUS.md`](PHASE-STATUS.md) | Status, evidence and next action for every phase. |
 | [`DASHBOARD.md`](DASHBOARD.md) | Phase 10 entry point to phase status, local checks, GitHub Actions and synthetic Promptfoo results. |
 | [`PRODUCTION.md`](PRODUCTION.md) | Phase 11 exact dependency pins, private Burnrate backup and restore runbook, and Not applicable production practices. |
 | [`INTEGRATION-BOOTSTRAP.md`](INTEGRATION-BOOTSTRAP.md) | Phase 12 clean-checkout verification, phase limits, and safe generic agent-foundation bootstrap. |
-| [`.specify/memory/constitution.md`](../../.specify/memory/constitution.md) | Spec Kit constitution: the project's durable principles (proposed, pending the maintainer's ratification). |
-| [`specs/001-gmail-sync/spec.md`](../../specs/001-gmail-sync/spec.md) | Retroactive spec of Gmail statement sync, with requirement IDs and traceability (draft). |
+| [`.specify/memory/constitution.md`](../../.specify/memory/constitution.md) | Spec Kit constitution: the project's durable principles (Ratified by the maintainer, 2026-10-21). |
+| [`specs/001-gmail-sync/spec.md`](../../specs/001-gmail-sync/spec.md) | Retroactive spec of Gmail statement sync, with requirement IDs and traceability (Accepted 2026-10-21; its Gmail limits predate the one-year scan, a known gap to revise). |
 | [`.ai/runbooks/handoff.md`](../../.ai/runbooks/handoff.md) | How to start, hand off, resume and finish an agent task. |
 | [`scripts/ai-worktree.mjs`](../../scripts/ai-worktree.mjs) | `npm run ai:worktree`: one worktree and branch per agent task, ownership in branch names and `.ai/tasks/<task>.md`, safe handoff. |
 | [`MCP-REGISTRY.md`](MCP-REGISTRY.md) | The MCP servers allowed for CardOS work, per agent: pins, limits, and how to add one. |
@@ -62,4 +62,4 @@ Use exactly these words: **Implemented and verified** · **Implemented but unver
 
 A status changes only with recorded evidence. Definitions: [PHASE-STATUS.md](PHASE-STATUS.md#status-vocabulary).
 
-Specs and the constitution carry a document status instead: a spec is Draft, Accepted, Implemented or Verified, and the constitution is Proposed until the maintainer ratifies it ([constitution, Governance](../../.specify/memory/constitution.md#governance)).
+Specs and the constitution carry a document status instead: a spec is Draft, Accepted, Implemented or Verified, and the constitution is Proposed until the maintainer ratifies it ([constitution, Governance](../../.specify/memory/constitution.md#governance)). On 2026-10-21 the maintainer ratified the constitution, accepted spec 001 and accepted ADRs 0001 and 0002.

@@ -8,7 +8,7 @@
 
 | | |
 |---|---|
-| **Status** | Proposed (the maintainer accepts ADRs, [AGENTS.md §7](../../AGENTS.md#7-risk-classes-and-approvals)) |
+| **Status** | Accepted (2026-10-21): accepted by the maintainer (the maintainer accepts ADRs, [AGENTS.md §7](../../AGENTS.md#7-risk-classes-and-approvals)) |
 | **Date** | 2026-10-18 |
 | **Risk class** | HIGH if ever installed: it writes agent hook configuration and captures session content |
 | **Verdict** | DEFER (same as the roadmap's adoption matrix, 2026-10-17) |

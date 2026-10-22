@@ -112,7 +112,7 @@ The pre-commit hook repeats step 3 and blocks data and secret file types; if it 
 When sources conflict, the higher one wins (1 is highest):
 
 1. The maintainer's explicit instructions and approved policies
-2. The repository constitution, [`.specify/memory/constitution.md`](.specify/memory/constitution.md) (proposed; it holds this rank only once the maintainer ratifies it)
+2. The repository constitution, [`.specify/memory/constitution.md`](.specify/memory/constitution.md) (ratified by the maintainer on 2026-10-21)
 3. Accepted feature specifications
 4. Accepted ADRs in `.ai/decisions/`
 5. Source code and executable checks

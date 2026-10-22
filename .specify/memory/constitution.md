@@ -1,10 +1,10 @@
 <!--
-SYNC IMPACT REPORT. Temporary scratch for the maintainer's review of this draft, not governance
-content. Delete this comment when the maintainer ratifies, or before the file is committed as final.
+SYNC IMPACT REPORT. Record of the 1.0.0 baseline and its ratification, not governance content.
 
 Version change: none (the file was Spec Kit's unversioned placeholder template) to 1.0.0.
   Bump rationale: first constitution for the repository, so it starts at the 1.0.0 baseline.
-Status: Proposed: pending maintainer ratification. An agent drafted this text; no agent ratified it.
+Status: Ratified by the maintainer on 2026-10-21, as written (no text of the principles changed).
+  An agent drafted this text on 2026-10-18; the maintainer's decision, not an agent's, ratified it.
 Modified principles: none renamed. The template's five placeholder principles are replaced by seven:
   I. Financial-Data Protection in a Public Repo
   II. Local-First, No Telemetry
@@ -20,19 +20,21 @@ Removed sections: the template's third section slot (SECTION_3_NAME) is not used
   gates live in Governance and in AGENTS.md sections 7 and 8, so a separate section would only
   repeat them.
 Deferred items and follow-ups:
-  - TODO(RATIFICATION_DATE): set when the maintainer ratifies; also change Status on the last line.
-  - Updated with this draft, pending the maintainer's review: AGENTS.md sections 4, 7, 9 and 10;
-    .ai/INDEX.md; docs/ai-engineering/README.md; docs/ai-engineering/PHASE-STATUS.md (the P3
-    record); .ai/CURRENT.md.
-  - On ratification: drop "proposed" from AGENTS.md section 9 level 2 and from the constitution
-    rows in .ai/INDEX.md and docs/ai-engineering/README.md.
+  - RATIFICATION_DATE: set to 2026-10-21 (maintainer's decision); Status on the last line is
+    Ratified. Last Amended stays 2026-10-18 because ratification changed no principle or rule.
+  - Updated with the draft: AGENTS.md sections 4, 7, 9 and 10; .ai/INDEX.md;
+    docs/ai-engineering/README.md; docs/ai-engineering/PHASE-STATUS.md (the P3 record);
+    .ai/CURRENT.md.
+  - Updated on ratification (2026-10-21): AGENTS.md section 9 level 2 note (ratified), the
+    constitution rows in .ai/INDEX.md and docs/ai-engineering/README.md, PHASE-STATUS.md (P3),
+    .ai/CURRENT.md.
 -->
 
 # CardOS Constitution
 
 - **Purpose:** The durable principles for AI-assisted work in this repository: what must always
-  hold, how a plan checks it, and how it changes. Binding only once ratified; the version and
-  status are on the last line.
+  hold, how a plan checks it, and how it changes. Ratified by the maintainer on 2026-10-21; the
+  version and status are on the last line.
 - **Audience:** AI coding agents (Claude Code, Codex) and the maintainer.
 - **Owner:** The maintainer. Agents propose changes; only the maintainer ratifies or amends.
 - **Related docs:** [AGENTS.md](../../AGENTS.md) (the operational rules this document refers to) ·
@@ -254,15 +256,14 @@ every patch?
 
 ### Ratification and status
 
-- This constitution is Proposed: pending maintainer ratification (see the last line). Only the
-  maintainer ratifies it. Ratifying sets the Status to Ratified and the Ratified date in the
-  version line, on the maintainer's explicit instruction; the maintainer MAY have an agent make the
-  edit, but the decision stays with the maintainer.
-- Until ratified, this document holds no place in the authority order below, and AGENTS.md remains
-  the binding rule set. Agents MAY draft specs and plans against it and run a plan's Constitution
-  Check as a dry run, and MUST label the result as checked against a Proposed constitution.
-- Agents MUST NOT ratify it, change its Status or Ratified date on their own initiative, or
-  describe it as ratified.
+- This constitution is Ratified: the maintainer ratified version 1.0.0, as written, on 2026-10-21.
+  The Status and Ratified date in the version line record that decision. Only the maintainer
+  ratifies or amends it; an agent MAY make the edit on the maintainer's explicit instruction, but
+  the decision stays with the maintainer.
+- It holds level 2 in the authority order below, above accepted specifications, accepted ADRs and
+  code, and AGENTS.md section 9 says the same. Plans run their Constitution Check against it as a
+  binding gate (see Compliance and the Constitution Check).
+- Agents MUST NOT change its Status or Ratified date, or amend it, on their own initiative.
 
 ### Amendment
 
@@ -304,7 +305,7 @@ Semantic versioning, `MAJOR.MINOR.PATCH`:
 The same order as AGENTS.md §9 (1 is highest; the higher level wins):
 
 1. The maintainer's explicit instructions and approved policies
-2. This constitution, once ratified
+2. This constitution (ratified 2026-10-21)
 3. Accepted feature specifications
 4. Accepted ADRs in `.ai/decisions/`
 5. Source code and executable checks
@@ -338,4 +339,4 @@ A spec records its status in `spec.md`. It moves through four states, in this or
 - Progress on a single requirement or task MUST use the PHASE-STATUS.md vocabulary (III.2); a
   withdrawn requirement (IV.2) is marked withdrawn instead.
 
-**Version**: 1.0.0 | **Status**: Proposed: pending maintainer ratification | **Ratified**: TODO(RATIFICATION_DATE): set when the maintainer ratifies | **Last Amended**: 2026-10-18
+**Version**: 1.0.0 | **Status**: Ratified | **Ratified**: 2026-10-21 (by the maintainer) | **Last Amended**: 2026-10-18

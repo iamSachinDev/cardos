@@ -3,13 +3,14 @@
 - **Purpose:** Record why CardOS runs against a locally patched Burnrate 0.5.2 and what the patches change, so an upgrade or a cleanup does not silently undo them.
 - **Audience:** The maintainer and AI agents touching Burnrate, Gmail sync or statement-processing behaviour.
 - **Owner:** The maintainer.
-- **Related docs:** [CONTEXT](../CONTEXT.md#external-dependency) · [README, "Burnrate patch"](../../README.md#burnrate-patch) · [INDEX](../INDEX.md) · [patches/burnrate-0.5.2.patch](../../patches/burnrate-0.5.2.patch)
+- **Related docs:** [CONTEXT](../CONTEXT.md#external-dependency) · [INDEX](../INDEX.md) · [patches/burnrate-0.5.2.patch](../../patches/burnrate-0.5.2.patch)
 - **How to validate:** `grep '^+++ ' patches/burnrate-0.5.2.patch` lists the seven files in the table below; `git log --oneline -- patches/` lists the patch commits.
 
 | | |
 |---|---|
-| **Status** | Accepted; the patches are in use |
+| **Status** | Accepted (2026-10-21): accepted by the maintainer. The patches are in use. The earlier "Accepted" text was written by an agent in Phase 2 (2026-10-17); the maintainer confirmed it on 2026-10-21 |
 | **Date** | 2026-10-17 |
+| **README** | Since the maintainer's 2026-10-21 decision the root README carries no Burnrate patch section; the "README" mentions below describe the earlier README. The apply command is in the Decision section; the patches are under [`patches/`](../../patches/) |
 | **Risk class** | HIGH: the patched code parses, deduplicates and stores financial statements |
 
 ## Context

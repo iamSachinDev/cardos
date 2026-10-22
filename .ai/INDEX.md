@@ -15,8 +15,8 @@ Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **C
 | [`.ai/CURRENT.md`](CURRENT.md) | Session summary: state, ownership, next steps | HOT | maintainer | — |
 | [`.ai/INDEX.md`](INDEX.md) | This map: what to load for which task | HOT | maintainer | 2026-10-21 |
 | [`.ai/CONTEXT.md`](CONTEXT.md) | Verified architecture: topology, module map, data flow, endpoints, scripts | WARM | maintainer | 2026-10-21 (source reconciliation) |
-| [`.ai/decisions/0001-local-burnrate-patch.md`](decisions/0001-local-burnrate-patch.md) | ADR: why Burnrate is patched locally and what the patches change | WARM | maintainer | 2026-10-18 |
-| [`.ai/decisions/0002-agent-memory.md`](decisions/0002-agent-memory.md) | ADR (Proposed): why ai-memory is deferred and `.ai/` handoffs are the shared memory; ai-memory facts and revisit conditions | WARM | maintainer | 2026-10-18 |
+| [`.ai/decisions/0001-local-burnrate-patch.md`](decisions/0001-local-burnrate-patch.md) | ADR (Accepted 2026-10-21): why Burnrate is patched locally and what the patches change | WARM | maintainer | 2026-10-21 |
+| [`.ai/decisions/0002-agent-memory.md`](decisions/0002-agent-memory.md) | ADR (Accepted 2026-10-21): why ai-memory is deferred and `.ai/` handoffs are the shared memory; ai-memory facts and revisit conditions | WARM | maintainer | 2026-10-21 |
 | [`.ai/LIFECYCLE.md`](LIFECYCLE.md) | Lifecycle rules for every `.ai/` file and for local agent memory: who creates, updates, reviews, retires, size limits, what never goes in | WARM | maintainer | 2026-10-18 |
 | [`.ai/runbooks/handoff.md`](runbooks/handoff.md) | How to start, hand off, resume and finish an agent task | WARM | maintainer | 2026-10-18 |
 | `.ai/tasks/<task>.md` | One agent task's owner, state, next step and history; lives on the task's branch, written by `npm run ai:worktree` | WARM (your task's file only) | task owner | — |
@@ -31,20 +31,20 @@ Tiers: **HOT** = load every session. **WARM** = load when the task needs it. **C
 | [`docs/ai-engineering/DOCS-AUTOMATION.md`](../docs/ai-engineering/DOCS-AUTOMATION.md) | Phase 8 generated and checked docs; Not applicable types | WARM | maintainer | 2026-10-19 |
 | [`docs/ai-engineering/EVALUATION-QUALITY.md`](../docs/ai-engineering/EVALUATION-QUALITY.md) | Phase 9 local Vitest and synthetic Promptfoo pilot procedure and result | WARM | maintainer | 2026-10-19 |
 | [`docs/ai-engineering/ROUTES.md`](../docs/ai-engineering/ROUTES.md) | Generated Astro route inventory | WARM | maintainer | 2026-10-19 |
-| [`README.md`](../README.md) | ST Finance user docs: features, run, optional Gmail setup, privacy and local Burnrate patch overview | WARM | maintainer | 2026-10-21 |
+| [`README.md`](../README.md) | ST Finance user docs: features, run, build and check, privacy (no Burnrate sections since 2026-10-21) | WARM | maintainer | 2026-10-21 |
 | [`patches/burnrate-0.5.2.patch`](../patches/burnrate-0.5.2.patch) | Local fixes to Burnrate 0.5.2 (840 lines) | WARM | maintainer | 2026-10-18 |
 | [`patches/burnrate-password-reparse-preserve.patch`](../patches/burnrate-password-reparse-preserve.patch) | Follow-up: keep a locked statement when a password retry fails. Not in the README (see ADR 0001) | WARM | maintainer | 2026-10-18 |
 | [`patches/burnrate-gmail-one-year.patch`](../patches/burnrate-gmail-one-year.patch) | Local Gmail scan extension to one year without a 200-message cap | WARM | maintainer | 2026-10-21 (source review) |
 | [`patches/burnrate-card-personal-fees.patch`](../patches/burnrate-card-personal-fees.patch) | Local cardholder annual-fee fields, separate from published product fees | WARM | maintainer | 2026-10-21 (source review) |
 | [`scripts/`](../scripts/) | App setup and agent worktrees; model-policy and documentation checks | WARM | maintainer | 2026-10-19 (documentation tooling only) |
-| [`.specify/memory/constitution.md`](../.specify/memory/constitution.md) | Spec Kit constitution: durable principles and governance (proposed, pending ratification) | WARM | maintainer | 2026-10-18 |
-| [`specs/001-gmail-sync/spec.md`](../specs/001-gmail-sync/spec.md) | Retroactive spec of Gmail sync: requirement IDs, edge cases, traceability (draft) | WARM | maintainer | 2026-10-18 |
+| [`.specify/memory/constitution.md`](../.specify/memory/constitution.md) | Spec Kit constitution: durable principles and governance (Ratified 2026-10-21) | WARM | maintainer | 2026-10-21 |
+| [`specs/001-gmail-sync/spec.md`](../specs/001-gmail-sync/spec.md) | Retroactive spec of Gmail sync: requirement IDs, edge cases, traceability (Accepted 2026-10-21; Gmail limits predate the one-year scan) | WARM | maintainer | 2026-10-21 |
 | `.specify/` (templates, scripts, workflows, integration config), `.claude/skills/speckit-*`, `.agents/skills/speckit-*` | Spec Kit 1.2.1 install and its commands for each agent; managed by the `specify` CLI, don't hand-edit | COLD | maintainer | 2026-10-18 |
 
 `—` means no date is recorded here yet (a document's own header may carry one). Current limitations:
 
-- README lists the patch directory but does not provide patch-application instructions. Verify compatibility with the locally installed Burnrate version before using a patch; see the historical [ADR 0001](decisions/0001-local-burnrate-patch.md).
-- The draft Gmail spec and accepted ADR 0001 predate the one-year and personal-fee patches. Their historical claims must not be used as current runtime guidance until reviewed.
+- The root README no longer mentions Burnrate patches (the maintainer's decision, 2026-10-21). The patches are in [`patches/`](../patches/); verify compatibility with the locally installed Burnrate version before using one, and see [ADR 0001](decisions/0001-local-burnrate-patch.md).
+- Accepted spec 001 and accepted ADR 0001 predate the one-year and personal-fee patches (spec 001's 120-day and 200-message limits are a recorded known gap to revise). Their historical claims must not be used as current runtime guidance until revised.
 - Agent and policy files were updated for ST Finance in the local reconciliation branch. The actual Opengrep scan now runs clean (2026-10-21); `.ai/CURRENT.md` tracks that gate.
 
 ## How to retrieve
